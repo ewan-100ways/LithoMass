@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LithoMass — Gem Weight Calculator</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GemCalc">
+<link rel="manifest" href='data:application/manifest+json,{"name":"Gem Weight Calculator","short_name":"GemCalc","display":"standalone","background_color":"#F5F0E8","theme_color":"#1A1815"}'>
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzFBMTgxNSIvPjxwYXRoIGQ9Ik05MCAzMEwxNTAgOTBMOTAgMTUwLTMwIDkwWiIgZmlsbD0iI0M0OTczQSIvPjwvc3ZnPg==">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzFBMTgxNSIvPjxwYXRoIGQ9Ik05MCAzMEwxNTAgOTBMOTAgMTUwLTMwIDkwWiIgZmlsbD0iI0M0OTczQSIvPjwvc3ZnPg==">
+<!--
+  ============================================================================
+  LithoMass — standalone gem weight calculator
+  ============================================================================
+  Single-file deliverable. Just double-click to open in a browser. No server,
+  no install, no other files needed.
+
+  Estimates carat weight from physical measurements using the LithoMass
+  formula set:
+    - Diamonds: L × W × D × K-factor   (K already encodes diamond SG and
+                                        typical proportions for the shape)
+    - Coloured stones: L × W × D × SF × SG
+                                       (SF is the geometric shape factor,
+                                        SG is the stone's specific gravity)
+  Corrections:
+    - Girdle thickness (None → Extremely Thick: ×1.00 to ×1.10)
+    - Bulginess        (None → Very Strong:     ×1.00 to ×1.15)
+    - OEC/OMC crown    (when the shape has a high crown / large culet)
+
+  Result range:
+    - ±5% when depth is measured
+    - ±20% when depth is estimated from width (per-shape ratio in `dr`)
+
+  External dependency: Google Fonts CSS (Cormorant Garamond + DM Mono +
+  DM Sans). Works fine offline too — the browser falls back to default
+  serif / monospace / sans fonts if the network isn't available.
+
+  Extracted from the 100 Ways listing tool's embedded carat estimator,
+  with embed-mode / iframe / parent-frame plumbing removed so it stands
+  on its own.
+  ============================================================================
+-->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #F5F0E8;
+  --warm-white: #FDFAF6;
+  --gold: #C4973A;
+  --gold-light: #E8C97A;
+  --gold-pale: #F2E8D0;
+  --gold-deep: #9B7428;
+  --charcoal: #1A1815;
+  --charcoal-2: #252220;
+  --mid: #6B6460;
+  --light: #B5AFA9;
+  --border: #DDD6CC;
+  --border-strong: #C8BFB3;
+  --shadow: 0 2px 8px rgba(28,24,21,0.1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--charcoal); min-height: 100vh; font-size: 13px; }
+
+/* ── HEADER ── */
+header {
+  background: var(--charcoal);
+  padding: 0 20px;
+  height: 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  border-bottom: 1px solid rgba(196,151,58,0.25);
+}
+.logo-lockup { display: flex; align-items: center; gap: 10px; }
+.logo-diamond { width: 16px; height: 16px; background: var(--gold); clip-path: polygon(50% 0%,100% 50%,50% 100%,0% 50%); }
+.logo-text { display: flex; flex-direction: column; line-height: 1; }
+.logo-main { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 500; color: var(--gold-light); letter-spacing: 0.04em; }
+.logo-sub { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-top: 1px; }
+.header-tag { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+
+/* ── LAYOUT ── */
+.page { max-width: 680px; margin: 0 auto; padding: 24px 16px 48px; display: flex; flex-direction: column; gap: 14px; }
+
+/* ── PAGE TITLE ── */
+.page-title { text-align: center; padding: 8px 0 4px; }
+.page-title h1 { font-family: 'Cormorant Garamond', serif; font-size: 1.9rem; font-weight: 400; color: var(--charcoal); letter-spacing: 0.02em; }
+.page-title p { font-size: 11px; color: var(--mid); font-family: 'DM Mono', monospace; margin-top: 4px; letter-spacing: 0.05em; }
+
+/* ── CARD ── */
+.card { background: var(--warm-white); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; }
+.card-title { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mid); margin-bottom: 14px; }
+
+/* ── SHAPE GRID ── */
+.shape-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+@media (max-width: 420px) { .shape-grid { grid-template-columns: repeat(3, 1fr); } }
+.shape-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 9px 4px 7px;
+  border: 1.5px solid var(--border); border-radius: 6px;
+  background: transparent; cursor: pointer;
+  font-size: 10px; color: var(--mid);
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.12s, background 0.12s;
+  line-height: 1.2;
+  text-align: center;
+}
+.shape-btn:hover { border-color: var(--gold); background: var(--gold-pale); }
+.shape-btn.active { border-color: var(--gold); background: var(--gold-pale); color: var(--charcoal); font-weight: 500; }
+.shape-icon { width: 36px; height: 26px; display: flex; align-items: center; justify-content: center; }
+.shape-icon svg { width: 100%; height: 100%; }
+
+/* ── FIELDS ── */
+.field-row { display: flex; gap: 12px; align-items: flex-end; }
+.field { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.field.narrow { flex: 0 0 88px; }
+.field label { font-size: 11px; color: var(--mid); }
+.field input, .field select {
+  font-size: 13px; padding: 7px 10px;
+  border: 1.5px solid var(--border); border-radius: 5px;
+  background: #fff; color: var(--charcoal);
+  font-family: 'DM Sans', sans-serif; outline: none;
+  transition: border-color 0.1s;
+  width: 100%;
+}
+.field input:focus, .field select:focus { border-color: var(--gold); }
+
+/* ── SEARCH-SELECT ── */
+.ss-wrap { position: relative; }
+.ss-drop {
+  position: absolute; top: calc(100% + 2px); left: 0; right: 0;
+  background: #fff; border: 1.5px solid var(--gold);
+  border-radius: 6px; box-shadow: var(--shadow);
+  max-height: 220px; overflow-y: auto; z-index: 300;
+}
+.ss-item {
+  padding: 7px 12px; font-size: 12px; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+}
+.ss-item:hover, .ss-item.focused { background: var(--cream); }
+.ss-sg { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--mid); white-space: nowrap; }
+.ss-none { padding: 8px 12px; font-size: 12px; color: var(--mid); }
+
+/* ── DIM GRID ── */
+.dim-grid { display: grid; gap: 10px; }
+.dim-grid.g2 { grid-template-columns: 1fr 1fr; }
+.dim-grid.g3 { grid-template-columns: 1fr 1fr 1fr; }
+.dim-grid.g4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.dim-field label { font-size: 10px; color: var(--mid); display: block; margin-bottom: 3px; }
+.dim-field input {
+  width: 100%; font-size: 14px; padding: 7px 8px;
+  border: 1.5px solid var(--border); border-radius: 5px;
+  background: #fff; color: var(--charcoal);
+  font-family: 'DM Mono', monospace; text-align: right; outline: none;
+  transition: border-color 0.1s;
+}
+.dim-field input:focus { border-color: var(--gold); }
+.dim-note { font-size: 10px; color: var(--light); font-family: 'DM Mono', monospace; margin-top: 8px; }
+
+/* ── CORRECTION BUTTONS ── */
+.corr-section { margin-bottom: 16px; }
+.corr-section:last-child { margin-bottom: 0; }
+.corr-label { font-size: 11px; color: var(--mid); margin-bottom: 7px; display: block; }
+.corr-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.corr-btn {
+  padding: 5px 11px; border: 1.5px solid var(--border); border-radius: 20px;
+  background: transparent; cursor: pointer; font-size: 11px; color: var(--mid);
+  font-family: 'DM Sans', sans-serif; transition: all 0.1s;
+  white-space: nowrap;
+}
+.corr-btn:hover { border-color: var(--gold); background: var(--gold-pale); }
+.corr-btn.active { border-color: var(--gold); background: var(--gold-pale); color: var(--charcoal); font-weight: 500; }
+.divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+/* ── RESULT ── */
+.result-card {
+  background: var(--charcoal); border-radius: 8px; padding: 28px 24px 20px;
+  text-align: center; color: #fff;
+}
+.result-empty { font-family: 'DM Mono', monospace; font-size: 12px; color: #5a5450; }
+.result-val { font-family: 'Cormorant Garamond', serif; font-size: 3.4rem; font-weight: 400; color: var(--gold-light); line-height: 1; letter-spacing: 0.02em; }
+.result-unit { font-family: 'DM Mono', monospace; font-size: 0.9rem; color: var(--light); margin-top: 4px; }
+.result-range { font-family: 'DM Mono', monospace; font-size: 10px; color: #5a5450; margin-top: 10px; }
+.result-formula { font-family: 'DM Mono', monospace; font-size: 10px; color: #5a5450; margin-top: 14px; border-top: 1px solid #2e2a28; padding-top: 12px; text-align: left; line-height: 1.6; }
+.result-actions { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
+.result-btn { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.12); background: transparent; color: rgba(255,255,255,0.35); cursor: pointer; border-radius: 3px; padding: 5px 12px; transition: all 0.15s; }
+.result-btn:hover { border-color: var(--gold); color: var(--gold-light); }
+
+@media (max-width: 500px) {
+  .field input, .field select, .dim-field input {
+    padding: 10px 10px;
+  }
+  .field-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .field.narrow {
+    flex: auto;
+  }
+  .dim-grid.g3, .dim-grid.g4 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .corr-btn {
+    white-space: normal;
+    height: auto;
+  }
+  .result-val {
+    font-size: 2.8rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-lockup">
+    <div class="logo-diamond"></div>
+    <div class="logo-text">
+      <span class="logo-main">100 Ways</span>
+      <span class="logo-sub">LithoMass</span>
+    </div>
+  </div>
+  <span class="header-tag">Standalone</span>
+</header>
+
+<div class="page">
+
+  <div class="page-title">
+    <h1>Gem Weight Calculator</h1>
+    <p>Estimated carat weight from physical measurements</p>
+  </div>
+
+  <!-- Shape -->
+  <div class="card">
+    <div class="card-title">Shape</div>
+    <div class="shape-grid" id="shapeGrid"></div>
+  </div>
+
+  <!-- Stone & SG -->
+  <div class="card">
+    <div class="card-title">Stone Type &amp; Specific Gravity</div>
+    <div class="field-row">
+      <div class="field">
+        <label>Stone type</label>
+        <div class="ss-wrap" id="ssWrap">
+          <input type="text" id="stoneInput" class="field" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:5px;background:#fff;font-size:13px;outline:none;width:100%"
+            placeholder="Search stone…" autocomplete="off"
+            oninput="ssFilter()" onfocus="ssOpen()" onblur="ssBlur()" onkeydown="ssKey(event)">
+          <div class="ss-drop" id="ssDrop" style="display:none"></div>
+        </div>
+      </div>
+      <div class="field narrow">
+        <label>Sp. gravity</label>
+        <input type="number" id="sgInput" min="0.5" max="9" step="0.01" placeholder="—"
+          oninput="onSgChange(this.value)">
+      </div>
+    </div>
+  </div>
+
+  <!-- Dimensions -->
+  <div class="card">
+    <div class="card-title">Dimensions</div>
+    <div id="dimFields"></div>
+  </div>
+
+  <!-- Corrections -->
+  <div class="card">
+    <div class="card-title">Corrections</div>
+
+    <div class="corr-section" id="roseSection" style="display:none">
+      <span class="corr-label">Rose cut style — count the triangular crown facets visible from above. More facets = taller dome = more weight per L×W×D.</span>
+      <div class="corr-btns" id="roseStyleBtns">
+        <button class="corr-btn" onclick="pickCorr('roseStyle',this,0.67)">3-facet — very flat</button>
+        <button class="corr-btn" onclick="pickCorr('roseStyle',this,0.87)">6-facet — six-point</button>
+        <button class="corr-btn active" onclick="pickCorr('roseStyle',this,1.00)">12-facet — Antwerp rose (standard)</button>
+        <button class="corr-btn" onclick="pickCorr('roseStyle',this,1.20)">24-facet — Dutch rose, tallest</button>
+      </div>
+    </div>
+    <div class="divider" id="roseDiv" style="display:none"></div>
+
+    <div class="corr-section" id="heartSection" style="display:none">
+      <span class="corr-label">Heart cleft depth — measure the V-notch at the top as a fraction of total length (point-to-cleft length). Deeper cleft = more material removed = lighter stone.</span>
+      <div class="corr-btns" id="heartCleftBtns">
+        <button class="corr-btn" onclick="pickCorr('heartCleft',this,1.05)">Shallow — cleft &lt; 20% of length</button>
+        <button class="corr-btn active" onclick="pickCorr('heartCleft',this,1.00)">Typical — cleft 20–30%</button>
+        <button class="corr-btn" onclick="pickCorr('heartCleft',this,0.92)">Deep — cleft &gt; 30% of length</button>
+      </div>
+    </div>
+    <div class="divider" id="heartDiv" style="display:none"></div>
+
+    <div class="corr-section" id="pearSection" style="display:none">
+      <span class="corr-label">Pear shoulder — where the widest point sits along the length. Find the widest line and see how far below the round end it sits. Higher (closer to the round end) = stubby & heavier; lower (closer to the point) = elongated & lighter.</span>
+      <div class="corr-btns" id="pearShoulderBtns">
+        <button class="corr-btn" onclick="pickCorr('pearShoulder',this,1.04)">High shoulder — stubby pear</button>
+        <button class="corr-btn active" onclick="pickCorr('pearShoulder',this,1.00)">Standard — belly ~⅓ down from round end</button>
+        <button class="corr-btn" onclick="pickCorr('pearShoulder',this,0.96)">Low shoulder — elongated pear</button>
+      </div>
+    </div>
+    <div class="divider" id="pearDiv" style="display:none"></div>
+
+    <div class="corr-section">
+      <span class="corr-label">Girdle thickness — The outer edge or "belt" of the stone. Look at the stone perfectly from the side. 'Standard' is the mathematical baseline. Only select a thicker option if the edge looks visibly prominent or chunky.</span>
+      <div class="corr-btns" id="girdleBtns">
+        <button class="corr-btn active" onclick="pickCorr('girdle',this,1.00)">Standard</button>
+        <button class="corr-btn" onclick="pickCorr('girdle',this,1.02)">Slightly Thick</button>
+        <button class="corr-btn" onclick="pickCorr('girdle',this,1.04)">Thick</button>
+        <button class="corr-btn" onclick="pickCorr('girdle',this,1.08)">Very Thick</button>
+        <button class="corr-btn" onclick="pickCorr('girdle',this,1.10)">Extremely Thick</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="corr-section">
+      <span class="corr-label">Stone bulginess — The shape of the stone's bottom half. Look at the stone from the side. If the lines drop perfectly straight to the bottom point, select 'Standard'. If the bottom looks gently curved or heavily swollen, select a stronger bulge to account for the extra mass.</span>
+      <div class="corr-btns" id="bulgeBtns">
+        <button class="corr-btn active" onclick="pickCorr('bulge',this,1.00)">Standard</button>
+        <button class="corr-btn" onclick="pickCorr('bulge',this,1.03)">Slight</button>
+        <button class="corr-btn" onclick="pickCorr('bulge',this,1.06)">Moderate</button>
+        <button class="corr-btn" onclick="pickCorr('bulge',this,1.10)">Strong</button>
+        <button class="corr-btn" onclick="pickCorr('bulge',this,1.15)">Very Strong</button>
+      </div>
+    </div>
+
+    <div class="divider" id="oecDiv" style="display:none"></div>
+    <div class="corr-section" id="oecSection" style="display:none">
+      <span class="corr-label">Old-cut proportions correction — OEC &amp; OMC have a higher crown, larger open culet, and smaller table than modern cuts, adding mass not captured by L×W×D alone</span>
+      <div class="corr-btns" id="oecBtns">
+        <button class="corr-btn active" onclick="pickCorr('oec',this,1.00)">×1.00 — low crown, modern-ish</button>
+        <button class="corr-btn" onclick="pickCorr('oec',this,1.02)">×1.02 — slightly high crown</button>
+        <button class="corr-btn" onclick="pickCorr('oec',this,1.04)">×1.04 — high crown, typical OEC/OMC</button>
+        <button class="corr-btn" onclick="pickCorr('oec',this,1.06)">×1.06 — very high crown, small table</button>
+        <button class="corr-btn" onclick="pickCorr('oec',this,1.08)">×1.08 — extreme crown, large open culet</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Output mode toggle (temporary for testing phase) -->
+  <div style="display:flex; justify-content:center; gap:6px;">
+    <button class="corr-btn" id="modeQuickBtn" onclick="setMode('quick')">Quick estimate</button>
+    <button class="corr-btn active" id="modeMCBtn" onclick="setMode('mc')">Statistical (Monte Carlo)</button>
+  </div>
+
+  <!-- Result -->
+  <div class="result-card" id="resultCard">
+    <div class="result-empty">enter dimensions to calculate</div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// PROBABILITY HELPERS (for Statistical / Monte Carlo mode)
+// ════════════════════════════════════════════════════════════════
+
+// Box-Muller — one Normal sample N(mu, sigma)
+function normalSample(mu, sigma) {
+  const u1 = Math.max(Math.random(), 1e-12); // avoid log(0)
+  const u2 = Math.random();
+  const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+  return mu + sigma * z;
+}
+
+// Uniform sample on [a, b)
+function uniformSample(a, b) {
+  return a + Math.random() * (b - a);
+}
+
+// Triangular distribution, peak at `mode`, support [min, max]
+function triangularSample(min, mode, max) {
+  if (min >= max) return min; // degenerate
+  const u = Math.random();
+  const f = (mode - min) / (max - min);
+  if (u < f) return min + Math.sqrt(u * (max - min) * (mode - min));
+  return max - Math.sqrt((1 - u) * (max - min) * (max - mode));
+}
+
+// Percentile from a SORTED array of numbers
+function percentile(sorted, p) {
+  const idx = (sorted.length - 1) * p;
+  const lo = Math.floor(idx), hi = Math.ceil(idx);
+  if (lo === hi) return sorted[lo];
+  return sorted[lo] * (hi - idx) + sorted[hi] * (idx - lo);
+}
+
+// Categorical-modifier bins for Monte Carlo. Each entry: [button_value, bin_lower, bin_upper].
+// Bins span halfway to neighboring categories. Open-ended top/bottom categories use
+// half-width extrapolation. MC samples Uniform(bin_lower, bin_upper) when the user picks a bin.
+const MOD_BINS = {
+  girdle: [
+    [1.00, 1.000, 1.010],
+    [1.02, 1.010, 1.030],
+    [1.04, 1.030, 1.060],
+    [1.08, 1.060, 1.090],
+    [1.10, 1.090, 1.110],
+  ],
+  bulge: [
+    [1.00, 1.000, 1.015],
+    [1.03, 1.015, 1.045],
+    [1.06, 1.045, 1.080],
+    [1.10, 1.080, 1.125],
+    [1.15, 1.125, 1.175],
+  ],
+  oec: [
+    [1.00, 1.000, 1.010],
+    [1.02, 1.010, 1.030],
+    [1.04, 1.030, 1.050],
+    [1.06, 1.050, 1.070],
+    [1.08, 1.070, 1.090],
+  ],
+  roseStyle: [
+    [0.67, 0.620, 0.770],
+    [0.87, 0.770, 0.935],
+    [1.00, 0.935, 1.100],
+    [1.20, 1.100, 1.250],
+  ],
+  heartCleft: [
+    [0.92, 0.880, 0.960],
+    [1.00, 0.960, 1.025],
+    [1.05, 1.025, 1.075],
+  ],
+  pearShoulder: [
+    [0.96, 0.940, 0.980],
+    [1.00, 0.980, 1.020],
+    [1.04, 1.020, 1.060],
+  ],
+};
+
+// Look up bin for a modifier value. Returns deterministic [value, value] if no match.
+function getBin(modType, value) {
+  const bins = MOD_BINS[modType];
+  if (!bins) return [value, value];
+  for (const [val, lo, hi] of bins) {
+    if (Math.abs(val - value) < 1e-6) return [lo, hi];
+  }
+  return [value, value];
+}
+
+// ════════════════════════════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════════════════════════════
+
+// sf  = geometric shape factor for colored stones (multiply by SG) — from LithoMass standard formula
+// kd  = diamond K-factor (includes diamond SG & proportions)
+// dims = 'round' | 'lwd' | 'tapbag'
+// dr  = typical depth ratio (depth ÷ shorter dimension) for estimating when depth is unknown
+// oec  = true → show OEC correction section
+const SHAPES = [
+  { id:'round',    label:'Round\nBrilliant',    sf:0.00180, kd:0.00610, dims:'round',  dr:0.61, cv:0.02 },
+  { id:'oec',      label:'Old European\nCut',   sf:0.00180, kd:0.00600, dims:'round',  dr:0.68, oec:true, cv:0.08 },
+  { id:'omc',      label:'Old Mine\nCut',       sf:0.00180, kd:0.00615, dims:'lwd',    dr:0.65, oec:true, cv:0.08 },
+  { id:'rose',     label:'Rose Cut',            sf:0.00150, kd:0.00500, dims:'lwd',    dr:0.30, roseStyle:true, cv:0.08 },
+  { id:'oval',     label:'Oval',                sf:0.00200, kd:0.00600, dims:'lwd',    dr:0.62, cv:0.06 },
+  { id:'pear',     label:'Pear',                sf:0.00180, kd:0.00590, dims:'lwd',    dr:0.60, pearShoulder:true, cv:0.06 },
+  { id:'marquise', label:'Marquise',            sf:0.00160, kd:0.00565, dims:'lwd',    dr:0.58, cv:0.06 },
+  { id:'navette',  label:'Navette',             sf:0.00225, kd:null,    dims:'lwd',    dr:0.30, cv:0.06 },
+  { id:'heart',    label:'Heart',               sf:0.00175, kd:0.00590, dims:'lwd',    dr:0.60, heartCleft:true, cv:0.06 },
+  { id:'cushion',  label:'Cushion',             sf:0.00220, kd:0.00760, dims:'lwd',    dr:0.63, cv:0.06 },
+  { id:'princess', label:'Princess',            sf:0.00230, kd:0.00820, dims:'lwd',    dr:0.71, cv:0.03 },
+  { id:'rectcut',  label:'Rectangular\nCut',    sf:0.00215, kd:0.00757, dims:'lwd',    dr:0.68, cv:0.04 },
+  { id:'asscher',  label:'Step Cut /\nAsscher', sf:0.00230, kd:0.00830, dims:'lwd',    dr:0.64, cv:0.04 },
+  { id:'emerald',  label:'Emerald Cut',         sf:0.00250, kd:0.00920, dims:'lwd',    dr:0.56, cv:0.04 },
+  { id:'radiant',  label:'Radiant',             sf:0.00250, kd:0.00820, dims:'lwd',    dr:0.65, cv:0.05 },
+  { id:'trillion', label:'Trillion',            sf:0.00170, kd:0.00510, dims:'lwd',    dr:0.44, cv:0.06 },
+  { id:'baguette', label:'Baguette',            sf:0.00250, kd:0.00915, dims:'lwd',    dr:0.50, kdTapered:0.00880, dimsTapered:'tapbag', drTapered:0.48, cv:0.04 },
+  { id:'cabochon', label:'Cabochon',            sf:0.00270, kd:null,    dims:'lwd',    dr:0.40, cv:0.08 },
+  { id:'slabround',label:'Round/Oval\nSlab',    sf:0.00375, kd:null,    dims:'round',  dr:0.20, cv:0.05 },
+  { id:'slabrect', label:'Rectangular\nSlab',   sf:0.00475, kd:null,    dims:'lwd',    dr:0.20, cv:0.05 },
+  { id:'bead',     label:'Bead',                sf:0.00262, kd:null,    dims:'round',  dr:1.00, cv:0.10 },
+];
+
+// SVG icons (36×26 viewBox)
+const ICONS = {
+  round:    `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="18" cy="13" rx="11" ry="11"/></svg>`,
+  oec:      `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="18" cy="13" rx="11" ry="11"/><line x1="18" y1="2" x2="18" y2="24"/><line x1="7" y1="13" x2="29" y2="13"/><line x1="10.2" y1="4.8" x2="25.8" y2="21.2"/><line x1="25.8" y1="4.8" x2="10.2" y2="21.2"/></svg>`,
+  omc:      `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="7" y="4" width="22" height="18" rx="5"/><line x1="18" y1="4" x2="18" y2="22"/><line x1="7" y1="13" x2="29" y2="13"/><line x1="11" y1="6.5" x2="25" y2="20"/><line x1="25" y1="6.5" x2="11" y2="20"/></svg>`,
+  oval:     `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="18" cy="13" rx="14" ry="10"/></svg>`,
+  pear:     `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 3 C22 3,29 9,29 17 C29 22,24 25,18 25 C12 25,7 22,7 17 C7 9,14 3,18 3Z"/></svg>`,
+  marquise: `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 2 Q30 13 18 24 Q6 13 18 2Z"/><line x1="18" y1="2" x2="18" y2="24"/><line x1="12" y1="13" x2="24" y2="13"/></svg>`,
+  navette:  `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 2 Q30 13 18 24 Q6 13 18 2Z"/></svg>`,
+  heart:    `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 22 C7 14.5,4 6,10 3.5 C13 2.5,16 5,18 8 C20 5,23 2.5,26 3.5 C32 6,29 14.5,18 22Z"/></svg>`,
+  cushion:  `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="7" y="4" width="22" height="18" rx="6"/></svg>`,
+  princess: `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="8" y="4" width="20" height="18" rx="1"/><line x1="8" y1="4" x2="28" y2="22"/><line x1="28" y1="4" x2="8" y2="22"/></svg>`,
+  rectcut:  `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="6" width="28" height="14" rx="1"/><line x1="4" y1="6" x2="32" y2="20"/><line x1="32" y1="6" x2="4" y2="20"/></svg>`,
+  emerald:  `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 8 L11 4 L25 4 L29 8 L29 18 L25 22 L11 22 L7 18Z"/></svg>`,
+  radiant:  `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5 L27 5 L31 9 L31 17 L27 21 L9 21 L5 17 L5 9 Z"/><line x1="9" y1="5" x2="27" y2="21"/><line x1="27" y1="5" x2="9" y2="21"/></svg>`,
+  asscher:  `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M11 3 L25 3 L28 6 L28 20 L25 23 L11 23 L8 20 L8 6 Z"/><rect x="14" y="9" width="8" height="8"/><line x1="8" y1="6" x2="14" y2="9"/><line x1="28" y1="6" x2="22" y2="9"/><line x1="28" y1="20" x2="22" y2="17"/><line x1="8" y1="20" x2="14" y2="17"/></svg>`,
+  trillion: `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 3 Q29 21.5 28 22 L8 22 Q7 21.5 18 3Z"/></svg>`,
+  baguette: `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="11" y="5" width="14" height="16" rx="1"/></svg>`,
+  rose:     `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="18" cy="13" r="10"/><polygon points="18,3 26.66,18 9.34,18"/><polygon points="26.66,8 18,23 9.34,8"/></svg>`,
+  cabochon: `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 20 Q5 6 18 6 Q31 6 31 20"/><line x1="5" y1="20" x2="31" y2="20"/></svg>`,
+  slabround:`<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="18" cy="13" rx="15" ry="4"/></svg>`,
+  slabrect: `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="10" width="30" height="6" rx="1"/></svg>`,
+  bead:     `<svg viewBox="0 0 36 26" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="18" cy="13" r="9"/><circle cx="18" cy="13" r="1.6" fill="currentColor"/></svg>`,
+};
+
+// Most common stones first, then alphabetical.
+// sg     = typical / catalog value (used as Triangular mode in MC, point in Quick)
+// sgMin  = published lower bound (IGI — parent species for varieties)
+// sgMax  = published upper bound (IGI — parent species for varieties)
+// Notes on sources:
+//   Morganite uses "Precious Beryl" parent range
+//   Garnet varieties (Demantoid, Hessonite, Tsavorite) use parent species
+//     (Andradite, Grossular, Grossular) ranges
+//   Garnet — Rhodolite is a pyrope-almandine mix not on IGI; Webster range used
+//   Onyx uses Chalcedony parent range
+//   Shell is organic, not on IGI; Webster ~2.80–2.86 used
+const STONES = [
+  { name:'Diamond',              sg:3.52, sgMin:3.50, sgMax:3.53 },
+  { name:'Ruby',                 sg:4.00, sgMin:3.97, sgMax:4.05 },
+  { name:'Sapphire',             sg:4.00, sgMin:3.95, sgMax:4.03 },
+  { name:'Emerald',              sg:2.72, sgMin:2.67, sgMax:2.78 },
+  { name:'Amethyst',             sg:2.65, sgMin:2.64, sgMax:2.66 },
+  { name:'Aquamarine',           sg:2.72, sgMin:2.68, sgMax:2.74 },
+  { name:'Citrine',              sg:2.65, sgMin:2.64, sgMax:2.66 },
+  { name:'Topaz',                sg:3.53, sgMin:3.49, sgMax:3.57 },
+  { name:'Tanzanite',            sg:3.35, sgMin:3.33, sgMax:3.36 },
+  { name:'Tourmaline',           sg:3.06, sgMin:2.82, sgMax:3.90 },
+  { name:'Spinel',               sg:3.60, sgMin:3.54, sgMax:3.63 },
+  { name:'Alexandrite',          sg:3.73, sgMin:3.70, sgMax:3.78 },
+  { name:'Chrysoberyl',          sg:3.73, sgMin:3.70, sgMax:3.78 },
+  { name:'Morganite',            sg:2.72, sgMin:2.66, sgMax:2.87 },
+  { name:'Opal',                 sg:2.15, sgMin:1.25, sgMax:2.23 },
+  { name:'Pearl',                sg:2.73, sgMin:2.60, sgMax:2.85 },
+  { name:'Peridot',              sg:3.34, sgMin:3.28, sgMax:4.39 },
+  { name:'Zircon',               sg:4.65, sgMin:3.93, sgMax:4.73 },
+  { name:'Garnet — Almandine',   sg:4.15, sgMin:3.93, sgMax:4.30 },
+  { name:'Garnet — Demantoid',   sg:3.84, sgMin:3.70, sgMax:4.10 },
+  { name:'Garnet — Hessonite',   sg:3.65, sgMin:3.56, sgMax:3.73 },
+  { name:'Garnet — Pyrope',      sg:3.78, sgMin:3.62, sgMax:3.87 },
+  { name:'Garnet — Rhodolite',   sg:3.84, sgMin:3.74, sgMax:3.94 },
+  { name:'Garnet — Spessartine', sg:4.15, sgMin:4.12, sgMax:4.18 },
+  { name:'Garnet — Tsavorite',   sg:3.61, sgMin:3.56, sgMax:3.73 },
+  { name:'Kunzite',              sg:3.18, sgMin:3.15, sgMax:3.21 },
+  { name:'Hiddenite',            sg:3.18, sgMin:3.15, sgMax:3.21 },
+  { name:'Iolite',               sg:2.61, sgMin:2.58, sgMax:2.66 },
+  { name:'Moonstone',            sg:2.57, sgMin:2.56, sgMax:2.59 },
+  { name:'Labradorite',          sg:2.70, sgMin:2.65, sgMax:2.75 },
+  { name:'Sunstone',             sg:2.64, sgMin:2.62, sgMax:2.65 },
+  { name:'Turquoise',            sg:2.76, sgMin:2.31, sgMax:2.84 },
+  { name:'Lapis Lazuli',         sg:2.80, sgMin:2.50, sgMax:3.00 },
+  { name:'Malachite',            sg:3.95, sgMin:3.25, sgMax:4.10 },
+  { name:'Jade — Jadeite',       sg:3.33, sgMin:3.30, sgMax:3.38 },
+  { name:'Jade — Nephrite',      sg:2.95, sgMin:2.90, sgMax:3.03 },
+  { name:'Coral',                sg:2.68, sgMin:2.60, sgMax:2.70 },
+  { name:'Shell',                sg:2.85, sgMin:2.80, sgMax:2.86 },
+  { name:'Amber',                sg:1.08, sgMin:1.05, sgMax:1.09 },
+  { name:'Jet',                  sg:1.30, sgMin:1.19, sgMax:1.35 },
+  { name:'Obsidian',             sg:2.40, sgMin:2.35, sgMax:2.60 },
+  { name:'Hematite',             sg:5.20, sgMin:5.12, sgMax:5.28 },
+  { name:'Rock Crystal / Quartz',sg:2.65, sgMin:2.64, sgMax:2.66 },
+  { name:'Rose Quartz',          sg:2.65, sgMin:2.64, sgMax:2.66 },
+  { name:'Smoky Quartz',         sg:2.65, sgMin:2.64, sgMax:2.66 },
+  { name:'Tiger\'s Eye',         sg:2.61, sgMin:2.58, sgMax:2.64 },
+  { name:'Chalcedony',           sg:2.60, sgMin:2.58, sgMax:2.64 },
+  { name:'Chrysoprase',          sg:2.62, sgMin:2.58, sgMax:2.64 },
+  { name:'Onyx',                 sg:2.60, sgMin:2.58, sgMax:2.64 },
+  { name:'Agate',                sg:2.62, sgMin:2.60, sgMax:2.64 },
+  { name:'Jasper',               sg:2.65, sgMin:2.58, sgMax:2.91 },
+  { name:'Apatite',              sg:3.18, sgMin:3.16, sgMax:3.23 },
+  { name:'Kyanite',              sg:3.68, sgMin:3.53, sgMax:3.70 },
+  { name:'Sphene (Titanite)',    sg:3.53, sgMin:3.52, sgMax:3.54 },
+  { name:'Rhodochrosite',        sg:3.58, sgMin:3.45, sgMax:3.70 },
+  { name:'Phenakite',            sg:2.96, sgMin:2.95, sgMax:2.97 },
+  { name:'Danburite',            sg:3.00, sgMin:2.97, sgMax:3.03 },
+  { name:'Vesuvianite',          sg:3.40, sgMin:3.32, sgMax:3.47 },
+  { name:'Zoisite',              sg:3.25, sgMin:3.15, sgMax:3.36 },
+  { name:'Enstatite',            sg:3.27, sgMin:3.20, sgMax:3.30 },
+  { name:'Diopside',             sg:3.29, sgMin:3.22, sgMax:3.38 },
+  { name:'Scapolite',            sg:2.68, sgMin:2.57, sgMax:2.74 },
+  { name:'Kornerupine',          sg:3.32, sgMin:3.27, sgMax:3.45 },
+  { name:'Benitoite',            sg:3.66, sgMin:3.64, sgMax:3.68 },
+  { name:'Fluorite',             sg:3.18, sgMin:3.00, sgMax:3.25 },
+  { name:'Calcite',              sg:2.70, sgMin:2.69, sgMax:2.71 },
+  { name:'Rhodonite',            sg:3.57, sgMin:3.40, sgMax:3.74 },
+  { name:'Prehnite',             sg:2.87, sgMin:2.82, sgMax:2.94 },
+  { name:'Pyrite',               sg:5.10, sgMin:5.00, sgMax:5.20 },
+  { name:'Marcasite',            sg:4.89, sgMin:4.83, sgMax:4.92 },
+  { name:'Smithsonite',          sg:4.30, sgMin:4.00, sgMax:4.65 },
+  { name:'Chrysocolla',          sg:2.20, sgMin:2.00, sgMax:2.40 },
+];
+
+// ════════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════════
+
+const S = {
+  shape: 'round',
+  stoneName: '',
+  sg: null,
+  dims: {},    // keyed dim name → float
+  girdle: 1.00,
+  bulge: 1.00,
+  oec: 1.00,
+  tapered: false,       // baguette-only: false=regular, true=tapered
+  roseStyle: 1.00,      // rose-only
+  heartCleft: 1.00,     // heart-only
+  pearShoulder: 1.00,   // pear-only
+  mode: 'mc',           // 'quick' (deterministic ±5%) | 'mc' (Monte Carlo CI)
+};
+
+// Presidium caliper σ — 1σ measurement uncertainty per repeated-measurement test
+const PRESIDIUM_SIGMA_MM = 0.01;
+// Manual SG entry σ (when user types their own SG instead of picking a stone)
+const MANUAL_SG_SIGMA = 0.02;
+// Monte Carlo sample count
+const MC_N = 10000;
+
+// ════════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════════
+
+function init() {
+  renderShapeGrid();
+  renderDimFields();
+}
+
+// ════════════════════════════════════════════════════════════════
+// SHAPE GRID
+// ════════════════════════════════════════════════════════════════
+
+function renderShapeGrid() {
+  document.getElementById('shapeGrid').innerHTML = SHAPES.map(sh =>
+    `<button class="shape-btn${sh.id === S.shape ? ' active' : ''}" onclick="selectShape('${sh.id}')">
+      <div class="shape-icon">${ICONS[sh.id] || ''}</div>
+      <span style="white-space:pre-line">${sh.label}</span>
+    </button>`
+  ).join('');
+}
+
+// Map dims between layout types so values survive a shape change
+function mapDims(fromType, toType) {
+  if (fromType === toType) return Object.assign({}, S.dims);
+  // Flatten to canonical l/w/depth
+  let l = 0, w = 0, depth = 0;
+  if (fromType === 'round') {
+    l = S.dims.d1 || 0; w = S.dims.d2 || 0; depth = S.dims.depth || 0;
+  } else if (fromType === 'lwd') {
+    l = S.dims.l || 0; w = S.dims.w || 0; depth = S.dims.depth || 0;
+  } else if (fromType === 'tapbag') {
+    l = S.dims.l || 0;
+    const w1 = S.dims.w1 || 0, w2 = S.dims.w2 || 0;
+    w = (w1 && w2) ? (w1 + w2) / 2 : w1;
+    depth = S.dims.depth || 0;
+  }
+  // Assign to new type
+  const m = {};
+  if (toType === 'round')  { if (l) m.d1 = l; if (w) m.d2 = w; if (depth) m.depth = depth; }
+  if (toType === 'lwd')    { if (l) m.l = l;  if (w) m.w = w;  if (depth) m.depth = depth; }
+  if (toType === 'tapbag') { if (l) m.l = l;  if (w) m.w1 = w; if (depth) m.depth = depth; }
+  return m;
+}
+
+function selectShape(id) {
+  const prev = SHAPES.find(s => s.id === S.shape);
+  const next = SHAPES.find(s => s.id === id);
+  if (prev && next) S.dims = mapDims(prev.dims, next.dims);
+  S.shape = id;
+  renderShapeGrid();
+  renderDimFields();
+  updateShapeModifiers();
+  calculate();
+}
+
+// ════════════════════════════════════════════════════════════════
+// DIMENSION FIELDS
+// ════════════════════════════════════════════════════════════════
+
+function v(key) { return S.dims[key] || ''; }
+
+function renderDimFields() {
+  const sh = SHAPES.find(s => s.id === S.shape);
+  const container = document.getElementById('dimFields');
+  if (!sh) return;
+
+  const isTaperedBag = sh.id === 'baguette' && S.tapered;
+  const effDims = isTaperedBag ? sh.dimsTapered : sh.dims;
+  const effDr   = isTaperedBag ? sh.drTapered   : sh.dr;
+
+  const depthLbl = `Depth (mm) <span style="font-size:10px;color:var(--light)">(or leave blank)</span>`;
+
+  // Baguette-only style toggle (regular ↔ tapered)
+  let prefix = '';
+  if (sh.id === 'baguette') {
+    prefix = `
+      <div style="margin-bottom:14px;">
+        <span class="corr-label" style="display:block;margin-bottom:7px;">Baguette style</span>
+        <div class="corr-btns">
+          <button class="corr-btn${!S.tapered ? ' active' : ''}" onclick="setTapered(false)">Regular</button>
+          <button class="corr-btn${S.tapered ? ' active' : ''}" onclick="setTapered(true)">Tapered</button>
+        </div>
+      </div>`;
+  }
+
+  if (effDims === 'round') {
+    container.innerHTML = prefix + `
+      <div class="dim-grid g3">
+        <div class="dim-field"><label>Diameter 1 (mm)</label>
+          <input type="number" min="0" step="0.01" placeholder="—" value="${v('d1')}" oninput="setDim('d1',this.value)"></div>
+        <div class="dim-field"><label>Diameter 2 (mm)</label>
+          <input type="number" min="0" step="0.01" placeholder="—" value="${v('d2')}" oninput="setDim('d2',this.value)"></div>
+        <div class="dim-field"><label>${depthLbl}</label>
+          <input type="number" min="0" step="0.01" placeholder="estimate" value="${v('depth')}" oninput="setDim('depth',this.value)"></div>
+      </div>
+      <div class="dim-note">Uses average of both diameters · depth estimated at ${Math.round(effDr*100)}% of diameter if blank</div>`;
+
+  } else if (effDims === 'lwd') {
+    container.innerHTML = prefix + `
+      <div class="dim-grid g3">
+        <div class="dim-field"><label>Length (mm)</label>
+          <input type="number" min="0" step="0.01" placeholder="—" value="${v('l')}" oninput="setDim('l',this.value)"></div>
+        <div class="dim-field"><label>Width (mm)</label>
+          <input type="number" min="0" step="0.01" placeholder="—" value="${v('w')}" oninput="setDim('w',this.value)"></div>
+        <div class="dim-field"><label>${depthLbl}</label>
+          <input type="number" min="0" step="0.01" placeholder="estimate" value="${v('depth')}" oninput="setDim('depth',this.value)"></div>
+      </div>
+      <div class="dim-note">Depth estimated at ${Math.round(effDr*100)}% of width if blank — widens accuracy range to ±20%</div>`;
+
+  } else if (effDims === 'tapbag') {
+    container.innerHTML = prefix + `
+      <div class="dim-grid g4">
+        <div class="dim-field"><label>Length (mm)</label>
+          <input type="number" min="0" step="0.01" placeholder="—" value="${v('l')}" oninput="setDim('l',this.value)"></div>
+        <div class="dim-field"><label>Wide end (mm)</label>
+          <input type="number" min="0" step="0.01" placeholder="—" value="${v('w1')}" oninput="setDim('w1',this.value)"></div>
+        <div class="dim-field"><label>Narrow end (mm)</label>
+          <input type="number" min="0" step="0.01" placeholder="—" value="${v('w2')}" oninput="setDim('w2',this.value)"></div>
+        <div class="dim-field"><label>${depthLbl}</label>
+          <input type="number" min="0" step="0.01" placeholder="estimate" value="${v('depth')}" oninput="setDim('depth',this.value)"></div>
+      </div>
+      <div class="dim-note">Uses average width: (wide + narrow) ÷ 2 · depth estimated at ${Math.round(effDr*100)}% if blank</div>`;
+  }
+}
+
+function setDim(key, raw) {
+  const v = parseFloat(raw);
+  S.dims[key] = (isNaN(v) || v < 0) ? 0 : v;
+  calculate();
+}
+
+// ════════════════════════════════════════════════════════════════
+// STONE SEARCH-SELECT
+// ════════════════════════════════════════════════════════════════
+
+let _ssItems = STONES.slice();
+let _ssFocus = -1;
+let _ssIsOpen = false;
+
+function ssOpen() {
+  _ssItems = STONES.slice();
+  _ssFocus = -1;
+  _renderDrop(_ssItems);
+  document.getElementById('ssDrop').style.display = 'block';
+  _ssIsOpen = true;
+}
+
+function ssBlur() {
+  setTimeout(() => {
+    document.getElementById('ssDrop').style.display = 'none';
+    _ssIsOpen = false;
+  }, 200);
+}
+
+function ssFilter() {
+  const q = (document.getElementById('stoneInput').value || '').toLowerCase().trim();
+  _ssItems = q ? STONES.filter(s => s.name.toLowerCase().includes(q)) : STONES.slice();
+  _ssFocus = -1;
+  _renderDrop(_ssItems);
+  document.getElementById('ssDrop').style.display = 'block';
+  _ssIsOpen = true;
+}
+
+function _renderDrop(list) {
+  const drop = document.getElementById('ssDrop');
+  if (!list.length) {
+    drop.innerHTML = '<div class="ss-none">No matches</div>';
+    return;
+  }
+  drop.innerHTML = list.map((s, i) =>
+    `<div class="ss-item${i === _ssFocus ? ' focused' : ''}" onmousedown="ssPick(${i})">
+      <span>${s.name}</span>
+      <span class="ss-sg">SG ${s.sg.toFixed(2)}</span>
+    </div>`
+  ).join('');
+}
+
+function ssPick(idx) {
+  const s = _ssItems[idx];
+  if (!s) return;
+  S.stoneName = s.name;
+  S.sg = s.sg;
+  document.getElementById('stoneInput').value = s.name;
+  document.getElementById('sgInput').value = s.sg.toFixed(2);
+  document.getElementById('ssDrop').style.display = 'none';
+  _ssIsOpen = false;
+  calculate();
+}
+
+function ssKey(e) {
+  if (!_ssIsOpen) return;
+  if (e.key === 'ArrowDown') {
+    _ssFocus = Math.min(_ssFocus + 1, _ssItems.length - 1);
+    _renderDrop(_ssItems);
+    e.preventDefault();
+  } else if (e.key === 'ArrowUp') {
+    _ssFocus = Math.max(_ssFocus - 1, 0);
+    _renderDrop(_ssItems);
+    e.preventDefault();
+  } else if (e.key === 'Enter') {
+    if (_ssFocus >= 0) ssPick(_ssFocus);
+    e.preventDefault();
+  } else if (e.key === 'Escape') {
+    document.getElementById('ssDrop').style.display = 'none';
+    _ssIsOpen = false;
+  }
+}
+
+function onSgChange(val) {
+  const v = parseFloat(val);
+  if (!isNaN(v) && v > 0) { S.sg = v; calculate(); }
+}
+
+// ════════════════════════════════════════════════════════════════
+// CORRECTIONS
+// ════════════════════════════════════════════════════════════════
+
+function pickCorr(type, btn, val) {
+  const map = {
+    girdle:'girdleBtns', bulge:'bulgeBtns', oec:'oecBtns',
+    roseStyle:'roseStyleBtns', heartCleft:'heartCleftBtns', pearShoulder:'pearShoulderBtns',
+  };
+  document.querySelectorAll(`#${map[type]} .corr-btn`).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  S[type] = val;
+  calculate();
+}
+
+// Baguette regular ↔ tapered. Moves width values across the dim-layout change
+// so the user doesn't lose what they've already typed.
+function setTapered(val) {
+  if (val === S.tapered) return;
+  if (val) {
+    // Regular → Tapered: copy w into w1, leave w2 blank
+    if (S.dims.w) S.dims.w1 = S.dims.w;
+    delete S.dims.w;
+  } else {
+    // Tapered → Regular: collapse w1, w2 into a single average w
+    const w1 = S.dims.w1 || 0, w2 = S.dims.w2 || 0;
+    if (w1 || w2) S.dims.w = w2 ? (w1 + w2) / 2 : w1;
+    delete S.dims.w1;
+    delete S.dims.w2;
+  }
+  S.tapered = val;
+  renderDimFields();
+  calculate();
+}
+
+// Quick (deterministic) ↔ Statistical (Monte Carlo) output toggle
+function setMode(mode) {
+  if (mode === S.mode) return;
+  S.mode = mode;
+  document.getElementById('modeQuickBtn').classList.toggle('active', mode === 'quick');
+  document.getElementById('modeMCBtn').classList.toggle('active', mode === 'mc');
+  calculate();
+}
+
+function updateShapeModifiers() {
+  const sh = SHAPES.find(s => s.id === S.shape);
+  const flags = {
+    oec:          !!(sh && sh.oec),
+    rose:         !!(sh && sh.roseStyle),
+    heart:        !!(sh && sh.heartCleft),
+    pear:         !!(sh && sh.pearShoulder),
+  };
+  Object.keys(flags).forEach(key => {
+    document.getElementById(key + 'Section').style.display = flags[key] ? '' : 'none';
+    document.getElementById(key + 'Div').style.display     = flags[key] ? '' : 'none';
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// CALCULATE
+// ════════════════════════════════════════════════════════════════
+
+// ─── L:W Adjustment ───
+function getLWAdjustment(shapeId, L, W) {
+  const configs = {
+    oval:     { ideal: 1.33, sens: 0.1 },
+    pear:     { ideal: 1.50, sens: 0.1 },
+    marquise: { ideal: 2.00, sens: 0.1 }
+  };
+  const cfg = configs[shapeId];
+  if (!cfg || !W || !L) return 1.0;
+  const actual = L / W;
+  const adj = 1 + (cfg.ideal - actual) * cfg.sens;
+  return Math.max(0.85, Math.min(1.15, adj));
+}
+
+function estDepth(refDim, dr) {
+  return { d: refDim * dr, estimated: true };
+}
+
+function getDimsLWD() {
+  const sh = SHAPES.find(s => s.id === S.shape);
+  if (!sh) return null;
+
+  const isTaperedBag = sh.id === 'baguette' && S.tapered;
+  const effDims = isTaperedBag ? sh.dimsTapered : sh.dims;
+  const effDr   = isTaperedBag ? sh.drTapered   : sh.dr;
+
+  if (effDims === 'round') {
+    const d1 = S.dims.d1 || 0, d2 = S.dims.d2 || 0;
+    if (!d1 || !d2) return null;
+
+    // Feature: Out of Round Warning check
+    const isOutOfRound = Math.abs(d1 - d2) / Math.max(d1, d2) > 0.10;
+
+    const avg = (d1 + d2) / 2;
+    const rawD = S.dims.depth || 0;
+    const { d: D, estimated } = rawD ? { d: rawD, estimated: false } : estDepth(avg, effDr);
+    const dNote = estimated ? `~${D.toFixed(2)}mm est.` : `${D.toFixed(2)}mm`;
+    const ratio = D / avg;
+    return { L: avg, W: avg, D, estimated, ratio, 
+             isExtremeDepth: ratio > 0.75, 
+             isOutOfRound,
+             note: `d̄=${avg.toFixed(2)} × d̄=${avg.toFixed(2)} × ${dNote}` };
+  }
+
+  if (effDims === 'lwd') {
+    let L = S.dims.l || 0, W = S.dims.w || 0;
+    if (!L || !W) return null;
+
+    // Feature: Auto-swap Length and Width
+    if (W > L) [L, W] = [W, L];
+
+    const rawD = S.dims.depth || 0;
+    const { d: D, estimated } = rawD ? { d: rawD, estimated: false } : estDepth(W, effDr);
+    const dNote = estimated ? `~${D.toFixed(2)}mm est.` : `${D.toFixed(2)}mm`;
+    const ratio = D / W;
+    return { L, W, D, estimated, ratio, 
+             isExtremeDepth: ratio > 0.75, 
+             isOutOfRound: false,
+             note: `${L.toFixed(2)} × ${W.toFixed(2)} × ${dNote}` };
+  }
+
+  if (effDims === 'tapbag') {
+    let L = S.dims.l || 0, w1 = S.dims.w1 || 0, w2 = S.dims.w2 || 0;
+    if (!L || !w1) return null;
+    let W = w2 ? (w1 + w2) / 2 : w1;
+
+    // Feature: Auto-swap Length and Width
+    if (W > L) [L, W] = [W, L];
+
+    const rawD = S.dims.depth || 0;
+    const { d: D, estimated } = rawD ? { d: rawD, estimated: false } : estDepth(W, effDr);
+    const dNote = estimated ? `~${D.toFixed(2)}mm est.` : `${D.toFixed(2)}mm`;
+    const ratio = D / W;
+    return { L, W, D, estimated, ratio, 
+             isExtremeDepth: ratio > 0.75, 
+             isOutOfRound: false,
+             note: `${L.toFixed(2)} × w̄=${W.toFixed(2)} × ${dNote}` };
+  }
+
+  return null;
+}
+
+function calculate() {
+  const card = document.getElementById('resultCard');
+  const sh = SHAPES.find(s => s.id === S.shape);
+  const dims = getDimsLWD();
+  const sg = S.sg || parseFloat(document.getElementById('sgInput').value) || 0;
+
+  if (!dims) {
+    card.innerHTML = '<div class="result-empty">enter dimensions to calculate</div>';
+    return;
+  }
+
+  // Feature: Clarify missing SG error
+  if (!sg) {
+    card.innerHTML = '<div class="result-empty" style="color:var(--gold-deep);padding:20px;">Please select a Stone Type or enter a Specific Gravity (SG) to calculate weight.</div>';
+    return;
+  }
+
+  const isDiamond = (S.stoneName === 'Diamond');
+  const isTaperedBag = sh.id === 'baguette' && S.tapered;
+  let effKd = isTaperedBag ? sh.kdTapered : sh.kd;
+  let effSf = sh.sf;
+
+  const lwAdj = getLWAdjustment(sh.id, dims.L, dims.W);
+  if (effKd !== null) effKd *= lwAdj;
+  effSf *= lwAdj;
+
+  // MC mode requires measured depth — fall back to deterministic if depth was estimated.
+  const useMC = (S.mode === 'mc') && !dims.estimated;
+
+  if (useMC) {
+    const mc = runMonteCarlo(sh, dims, sg, isDiamond, effKd);
+    renderMCResult(card, sh, dims, sg, isDiamond, effKd, mc);
+  } else {
+    renderDeterministicResult(card, sh, dims, sg, isDiamond, effKd, S.mode === 'mc');
+  }
+}
+
+// ─── Deterministic (Quick mode, or MC fallback when depth is estimated) ───
+function renderDeterministicResult(card, sh, dims, sg, isDiamond, effKd, mcFallback) {
+  const { L, W, D } = dims;
+  let ct, formulaStr;
+
+  if (isDiamond && effKd !== null) {
+    ct = L * W * D * effKd;
+    formulaStr = `${dims.note} × K=${effKd} (diamond)`;
+  } else {
+    ct = L * W * D * sh.sf * sg;
+    formulaStr = `${dims.note} × SF=${sh.sf} × SG=${sg.toFixed(2)}`;
+  }
+
+  const corrections = [];
+  ct *= S.girdle;
+  if (S.girdle !== 1.00) corrections.push(`girdle ×${S.girdle}`);
+  ct *= S.bulge;
+  if (S.bulge !== 1.00) corrections.push(`bulge ×${S.bulge}`);
+  if (sh.oec)          { ct *= S.oec;          if (S.oec          !== 1.00) corrections.push(`OEC ×${S.oec}`); }
+  if (sh.roseStyle)    { ct *= S.roseStyle;    if (S.roseStyle    !== 1.00) corrections.push(`rose ×${S.roseStyle}`); }
+  if (sh.heartCleft)   { ct *= S.heartCleft;   if (S.heartCleft   !== 1.00) corrections.push(`cleft ×${S.heartCleft}`); }
+  if (sh.pearShoulder) { ct *= S.pearShoulder; if (S.pearShoulder !== 1.00) corrections.push(`shoulder ×${S.pearShoulder}`); }
+
+  if (corrections.length) formulaStr += ' × ' + corrections.join(' × ');
+
+  const pct = dims.estimated ? 0.20 : 0.05;
+  const range_lo = (ct * (1 - pct)).toFixed(2);
+  const range_hi = (ct * (1 + pct)).toFixed(2);
+  const ctStr = ct < 0.10 ? ct.toFixed(3) : ct.toFixed(2);
+  const rangeNote = dims.estimated
+    ? `±20% — depth estimated at ${Math.round(sh.dr * 100)}% of width`
+    : '±5%';
+
+  const fallbackNote = mcFallback
+    ? '<div class="result-range" style="opacity:0.7;font-style:italic;margin-top:4px;">Statistical mode unavailable — depth estimated; enter measured depth for Monte Carlo CI.</div>'
+    : '';
+  
+  const extremeNote = dims.isExtremeDepth
+    ? `<div style="color:var(--gold-light);font-size:11px;margin-top:8px;font-weight:500;">Unusually deep stone detected. Ensure you have selected the correct Bulge or Girdle correction above.</div>`
+    : '';
+
+  const roundNote = dims.isOutOfRound
+    ? `<div style="color:var(--gold-light);font-size:11px;margin-top:8px;font-weight:500;">Diameters differ significantly. For best accuracy, select the Oval shape.</div>`
+    : '';
+
+  card.innerHTML = `
+    <div class="result-val">${ctStr}</div>
+    <div class="result-unit">carats</div>
+    <div class="result-range">range ${range_lo} – ${range_hi} ct &nbsp; ${rangeNote}</div>
+    ${extremeNote}
+    ${roundNote}
+    ${fallbackNote}
+    <div class="result-formula">${formulaStr} = ${ctStr} ct</div>
+    <div class="result-actions">
+      <button class="result-btn" onclick="copyResult('${ctStr}')">Copy weight</button>
+      <button class="result-btn" onclick="resetAll()">Reset</button>
+    </div>`;
+}
+
+// ─── Monte Carlo engine ───
+// Samples each measured dimension as N(measured, 0.01mm), SG as Triangular over
+// the IGI range (or N(value, 0.02) for manual entry), and each categorical
+// modifier as Uniform over its bin. Shape factor / K-factor and depth ratio
+// (when blank) are deterministic — we don't have published variance for those.
+function runMonteCarlo(sh, dims, sg, isDiamond, effKd) {
+  const isTaperedBag = sh.id === 'baguette' && S.tapered;
+  const effDims = isTaperedBag ? sh.dimsTapered : sh.dims;
+  const sigmaDim = PRESIDIUM_SIGMA_MM;
+  const shapeCv = sh.cv || 0.05; // Fallback if shape data missing
+
+  // Resolve SG range
+  const stone = STONES.find(st => st.name === S.stoneName);
+  const sgMatchesCatalog = stone && Math.abs(stone.sg - sg) < 0.001;
+  let sgMin, sgMode, sgMax, sgSource;
+  if (stone && stone.sgMin != null && sgMatchesCatalog) {
+    sgMin = stone.sgMin; sgMode = stone.sg; sgMax = stone.sgMax;
+    sgSource = 'IGI';
+  } else {
+    sgMin = sg - MANUAL_SG_SIGMA; sgMode = sg; sgMax = sg + MANUAL_SG_SIGMA;
+    sgSource = 'manual ±0.02';
+  }
+
+  // Resolve categorical bins once
+  const gBin = getBin('girdle', S.girdle);
+  const bBin = getBin('bulge',  S.bulge);
+  const oBin = sh.oec          ? getBin('oec',          S.oec)          : null;
+  const rBin = sh.roseStyle    ? getBin('roseStyle',    S.roseStyle)    : null;
+  const hBin = sh.heartCleft   ? getBin('heartCleft',   S.heartCleft)   : null;
+  const pBin = sh.pearShoulder ? getBin('pearShoulder', S.pearShoulder) : null;
+
+  const results = new Float64Array(MC_N);
+  for (let i = 0; i < MC_N; i++) {
+    // Sample dimensions
+    let L, W, D;
+    if (effDims === 'round') {
+      const d1 = normalSample(S.dims.d1, sigmaDim);
+      const d2 = normalSample(S.dims.d2, sigmaDim);
+      L = W = (d1 + d2) / 2;
+      D = normalSample(S.dims.depth, sigmaDim);
+    } else if (effDims === 'lwd') {
+      L = normalSample(S.dims.l, sigmaDim);
+      W = normalSample(S.dims.w, sigmaDim);
+      D = normalSample(S.dims.depth, sigmaDim);
+    } else if (effDims === 'tapbag') {
+      L = normalSample(S.dims.l, sigmaDim);
+      const w1 = normalSample(S.dims.w1, sigmaDim);
+      const w2 = S.dims.w2 ? normalSample(S.dims.w2, sigmaDim) : w1;
+      W = (w1 + w2) / 2;
+      D = normalSample(S.dims.depth, sigmaDim);
+    }
+
+    // Sample SG (triangular for catalog, narrow normal-like for manual)
+    const sampledSg = triangularSample(sgMin, sgMode, sgMax);
+
+    // Base weight — for diamond, scale K by SG ratio so SG variance propagates
+    let ct;
+    if (isDiamond && effKd !== null) {
+      ct = L * W * D * effKd * (sampledSg / 3.52);
+    } else {
+      ct = L * W * D * sh.sf * sampledSg;
+    }
+
+    // Categorical multipliers — Uniform over bin
+    ct *= uniformSample(gBin[0], gBin[1]);
+    ct *= uniformSample(bBin[0], bBin[1]);
+    if (oBin) ct *= uniformSample(oBin[0], oBin[1]);
+    if (rBin) ct *= uniformSample(rBin[0], rBin[1]);
+    if (hBin) ct *= uniformSample(hBin[0], hBin[1]);
+    if (pBin) ct *= uniformSample(pBin[0], pBin[1]);
+
+    // Shape variance multiplier
+    ct *= normalSample(1.0, shapeCv);
+
+    results[i] = ct;
+  }
+
+  results.sort();
+  return {
+    median: percentile(results, 0.5),
+    p025:   percentile(results, 0.025),
+    p975:   percentile(results, 0.975),
+    p25:    percentile(results, 0.25),
+    p75:    percentile(results, 0.75),
+    sgMin, sgMode, sgMax, sgSource,
+    gBin, bBin, oBin, rBin, hBin, pBin,
+  };
+}
+
+function renderMCResult(card, sh, dims, sg, isDiamond, effKd, mc) {
+  const fmt = v => v < 0.10 ? v.toFixed(3) : v.toFixed(2);
+  const medianStr = fmt(mc.median);
+
+  // Formula breakdown — show what's modeled probabilistically vs deterministic
+  const lines = [];
+  lines.push(`${dims.note} (±${PRESIDIUM_SIGMA_MM}mm measurement precision)`);
+  if (isDiamond && effKd !== null) {
+    lines.push(`× K=${effKd} (standard diamond constant) × (SG/3.52 adjustment)`);
+    lines.push(`× SG ${mc.sgMin.toFixed(2)}–${mc.sgMax.toFixed(2)} (${mc.sgSource} density range)`);
+  } else {
+    lines.push(`× SF=${sh.sf} (geometric shape factor)`);
+    lines.push(`× SG ${mc.sgMin.toFixed(2)}–${mc.sgMax.toFixed(2)} (${mc.sgSource} density range, triangular distribution)`);
+  }
+  lines.push(`× Cut Variance: ${(sh.cv*100).toFixed(0)}% CV (modeled ${sh.label.replace(/\n/g, ' ')} geometric deviation)`);
+  if (S.girdle !== 1.00) lines.push(`× girdle [${mc.gBin[0].toFixed(3)}, ${mc.gBin[1].toFixed(3)}]`);
+  if (S.bulge  !== 1.00) lines.push(`× bulge [${mc.bBin[0].toFixed(3)}, ${mc.bBin[1].toFixed(3)}]`);
+  if (mc.oBin && S.oec          !== 1.00) lines.push(`× OEC [${mc.oBin[0].toFixed(3)}, ${mc.oBin[1].toFixed(3)}]`);
+  if (mc.rBin && S.roseStyle    !== 1.00) lines.push(`× rose [${mc.rBin[0].toFixed(3)}, ${mc.rBin[1].toFixed(3)}]`);
+  if (mc.hBin && S.heartCleft   !== 1.00) lines.push(`× cleft [${mc.hBin[0].toFixed(3)}, ${mc.hBin[1].toFixed(3)}]`);
+  if (mc.pBin && S.pearShoulder !== 1.00) lines.push(`× shoulder [${mc.pBin[0].toFixed(3)}, ${mc.pBin[1].toFixed(3)}]`);
+
+  const extremeNote = dims.isExtremeDepth
+    ? `<div style="color:var(--gold-light);font-size:11px;margin-top:8px;font-weight:500;">Unusually deep stone detected. Ensure you have selected the correct Bulge or Girdle correction above.</div>`
+    : '';
+
+  const roundNote = dims.isOutOfRound
+    ? `<div style="color:var(--gold-light);font-size:11px;margin-top:8px;font-weight:500;">Diameters differ significantly. For best accuracy, select the Oval shape.</div>`
+    : '';
+
+  card.innerHTML = `
+    <div class="result-val">${medianStr}</div>
+    <div class="result-unit">carats — median</div>
+    <div class="result-range">95% CI: ${fmt(mc.p025)} – ${fmt(mc.p975)} ct</div>
+    <div class="result-range" style="opacity:0.8;">50% CI: ${fmt(mc.p25)} – ${fmt(mc.p75)} ct</div>
+    ${extremeNote}
+    ${roundNote}
+    <div class="result-formula">${lines.join('<br>')}<br><br><span style="opacity:0.6;">n = ${MC_N.toLocaleString()} iterations · This statistical model integrates measurement error, mineral density ranges, and shape-specific geometric variance to calculate confidence intervals.</span></div>
+    <div class="result-actions">
+      <button class="result-btn" onclick="copyResult('${medianStr}')">Copy median</button>
+      <button class="result-btn" onclick="resetAll()">Reset</button>
+    </div>`;
+}
+
+function copyResult(val) {
+  navigator.clipboard.writeText(val).catch(() => {});
+}
+
+function resetAll() {
+  S.dims = {};
+  S.stoneName = '';
+  S.sg = null;
+  S.girdle = 1.00;
+  S.bulge = 1.00;
+  S.oec = 1.00;
+  S.tapered = false;
+  S.roseStyle = 1.00;
+  S.heartCleft = 1.00;
+  S.pearShoulder = 1.00;
+  S.mode = 'mc';
+  document.getElementById('modeQuickBtn').classList.remove('active');
+  document.getElementById('modeMCBtn').classList.add('active');
+  document.getElementById('stoneInput').value = '';
+  document.getElementById('sgInput').value = '';
+  // Most modifier groups reset to first button; rose/heart/pear default
+  // to the "standard" button which is not always index 0.
+  const defaultIdx = { girdleBtns:0, bulgeBtns:0, oecBtns:0,
+                       roseStyleBtns:2, heartCleftBtns:1, pearShoulderBtns:1 };
+  Object.keys(defaultIdx).forEach(id => {
+    const btns = document.querySelectorAll(`#${id} .corr-btn`);
+    btns.forEach((b, i) => b.classList.toggle('active', i === defaultIdx[id]));
+  });
+  renderDimFields();
+  document.getElementById('resultCard').innerHTML = '<div class="result-empty">enter dimensions to calculate</div>';
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LithoMass — Formula Test Harness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream:       #F5F0E8;
+  --warm-white:  #FDFAF6;
+  --gold:        #C4973A;
+  --gold-light:  #E8C97A;
+  --gold-pale:   #F2E8D0;
+  --gold-deep:   #9B7428;
+  --charcoal:    #1A1815;
+  --mid:         #6B6460;
+  --light:       #B5AFA9;
+  --border:      #DDD6CC;
+  --series-base: #C4973A;
+  --series-mc:   #48B484;
+  --ok:          #2E7D32;
+  --ok-bg:       #E8F5E9;
+  --warn:        #BF6000;
+  --warn-bg:     #FFF3E0;
+  --bad:         #B71C1C;
+  --bad-bg:      #FFEBEE;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--charcoal); min-height: 100vh; font-size: 13px; }
+
+header {
+  background: var(--charcoal); padding: 0 20px; height: 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  border-bottom: 1px solid rgba(196,151,58,0.25);
+}
+.logo-lockup { display: flex; align-items: center; gap: 10px; }
+.logo-diamond { width: 16px; height: 16px; background: var(--gold); clip-path: polygon(50% 0%,100% 50%,50% 100%,0% 50%); }
+.logo-text { display: flex; flex-direction: column; line-height: 1; }
+.logo-main { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 500; color: var(--gold-light); letter-spacing: 0.04em; }
+.logo-sub  { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-top: 1px; }
+.header-tag { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+
+.page { max-width: 960px; margin: 0 auto; padding: 24px 16px 60px; display: flex; flex-direction: column; gap: 14px; }
+.page-title { text-align: center; padding: 8px 0 4px; }
+.page-title h1 { font-family: 'Cormorant Garamond', serif; font-size: 1.9rem; font-weight: 400; letter-spacing: 0.02em; }
+.page-title p  { font-size: 11px; color: var(--mid); font-family: 'DM Mono', monospace; margin-top: 4px; letter-spacing: 0.05em; }
+
+.card { background: var(--warm-white); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; }
+.card-title { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mid); margin-bottom: 14px; }
+
+textarea {
+  width: 100%; height: 130px; font-family: 'DM Mono', monospace; font-size: 11px;
+  border: 1.5px solid var(--border); border-radius: 5px; background: #fff;
+  color: var(--charcoal); padding: 10px 12px; resize: vertical; outline: none;
+  transition: border-color 0.1s;
+}
+textarea:focus { border-color: var(--gold); }
+.input-row { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+.btn-primary {
+  padding: 8px 20px; background: var(--gold); color: var(--charcoal);
+  border: none; border-radius: 5px; font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 500; cursor: pointer; letter-spacing: 0.04em;
+  transition: background 0.1s;
+}
+.btn-primary:hover:not(:disabled) { background: var(--gold-light); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-ghost {
+  padding: 8px 14px; background: transparent; color: var(--mid);
+  border: 1.5px solid var(--border); border-radius: 5px;
+  font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.1s;
+}
+.btn-ghost:hover { border-color: var(--gold); color: var(--charcoal); }
+.file-label {
+  padding: 8px 14px; background: transparent; color: var(--mid);
+  border: 1.5px solid var(--border); border-radius: 5px; font-family: 'DM Sans', sans-serif;
+  font-size: 12px; cursor: pointer; transition: all 0.1s; display: inline-block;
+}
+.file-label:hover { border-color: var(--gold); color: var(--charcoal); }
+#csvFileInput { display: none; }
+.input-hint { font-size: 10px; color: var(--light); font-family: 'DM Mono', monospace; margin-top: 7px; }
+
+/* ── DELETED BAR ── */
+.del-bar {
+  background: #FFF8E1; border: 1px solid #FFD54F; border-radius: 6px;
+  padding: 9px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  font-size: 11px; font-family: 'DM Mono', monospace; color: var(--warn);
+}
+
+/* ── SUMMARY STATS ── */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.stat-col { background: var(--cream); border-radius: 6px; padding: 14px 16px; }
+.stat-col-title { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+.stat-col-title.base { color: var(--series-base); }
+.stat-col-title.mc   { color: var(--series-mc); }
+.stat-row { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; border-bottom: 1px solid var(--border); }
+.stat-row:last-child { border-bottom: none; }
+.stat-label { font-size: 11px; color: var(--mid); }
+.stat-value { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; }
+
+/* ── BREAKDOWN TABLE ── */
+.breakdown-wrap { overflow-x: auto; }
+.breakdown-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 640px; }
+.breakdown-table th {
+  padding: 6px 10px; font-size: 10px; font-weight: 500; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--mid); border-bottom: 1.5px solid var(--border); white-space: nowrap;
+}
+.breakdown-table th.center { text-align: center; }
+.breakdown-table th.right, .breakdown-table td.right { text-align: right; }
+.breakdown-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.breakdown-table tr:last-child td { border-bottom: none; }
+.breakdown-table tr.data-row:hover td { background: var(--cream); }
+
+/* ── SCATTER CANVAS ── */
+.scatter-canvas { width: 100%; display: block; cursor: crosshair; }
+#scatterTooltip {
+  position: fixed; display: none;
+  background: var(--charcoal); color: #fff; border-radius: 5px; padding: 8px 12px;
+  font-family: 'DM Mono', monospace; font-size: 11px; line-height: 1.65;
+  pointer-events: none; z-index: 1000; max-width: 240px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+}
+
+/* ── RESULTS TABLE ── */
+.table-wrap { overflow-x: auto; }
+.results-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 960px; }
+.results-table th {
+  padding: 6px 10px; font-size: 10px; font-weight: 500; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--mid); border-bottom: 1.5px solid var(--border);
+  white-space: nowrap; cursor: pointer; user-select: none;
+}
+.results-table th:hover { color: var(--charcoal); }
+.results-table th.right, .results-table td.right { text-align: right; }
+.results-table td {
+  padding: 6px 10px; border-bottom: 1px solid var(--border);
+  vertical-align: middle; font-family: 'DM Mono', monospace;
+}
+.results-table tr:hover td { background: var(--cream); }
+.results-table tr:last-child td { border-bottom: none; }
+.sort-arrow { font-size: 9px; margin-left: 3px; color: var(--gold); }
+
+/* ── DELETE BUTTON ── */
+.del-btn {
+  width: 22px; height: 22px; padding: 0; border: none; background: transparent;
+  color: var(--light); cursor: pointer; font-size: 15px; line-height: 1;
+  border-radius: 3px; display: inline-flex; align-items: center; justify-content: center;
+  transition: all 0.1s;
+}
+.del-btn:hover { background: var(--bad-bg); color: var(--bad); }
+
+/* ── ROW HIGHLIGHT (scatter click) ── */
+@keyframes row-flash {
+  0%   { background: var(--gold-pale); }
+  60%  { background: var(--gold-pale); }
+  100% { background: transparent; }
+}
+.highlight-row td { animation: row-flash 1.4s ease-out forwards; }
+
+/* ── PAGINATION ── */
+.pagination {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+  flex-wrap: wrap; gap: 8px;
+}
+.pg-info { font-size: 11px; color: var(--mid); font-family: 'DM Mono', monospace; }
+.pg-btns { display: flex; align-items: center; gap: 4px; }
+.pg-btn {
+  padding: 4px 10px; border: 1.5px solid var(--border); border-radius: 4px;
+  background: transparent; color: var(--mid); cursor: pointer;
+  font-size: 13px; font-family: 'DM Sans', sans-serif; transition: all 0.1s;
+}
+.pg-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--charcoal); }
+.pg-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.pg-label { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--mid); padding: 0 8px; white-space: nowrap; }
+
+.shape-tag {
+  display: inline-block; padding: 2px 6px; border-radius: 3px;
+  background: var(--gold-pale); color: var(--gold-deep);
+  font-size: 10px; font-weight: 500; letter-spacing: 0.04em; font-family: 'DM Mono', monospace;
+}
+.err-ok   { color: var(--ok);   background: var(--ok-bg);   padding: 2px 5px; border-radius: 3px; white-space: nowrap; }
+.err-warn { color: var(--warn); background: var(--warn-bg); padding: 2px 5px; border-radius: 3px; white-space: nowrap; }
+.err-bad  { color: var(--bad);  background: var(--bad-bg);  padding: 2px 5px; border-radius: 3px; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-lockup">
+    <div class="logo-diamond"></div>
+    <div class="logo-text">
+      <span class="logo-main">100 Ways</span>
+      <span class="logo-sub">LithoMass</span>
+    </div>
+  </div>
+  <span class="header-tag">Test Harness</span>
+</header>
+
+<div class="page">
+
+  <div class="page-title">
+    <h1>Formula Accuracy Test</h1>
+    <p>Base · Monte Carlo — compared against verified carat weights</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Input — CSV Data</div>
+    <textarea id="csvInput" placeholder="Paste CSV data here…&#10;&#10;Expected columns: Gemstone, Shape, shape_id, L, W, D, girdle_modifier, bulge_modifier, Actual_Weight"></textarea>
+    <div class="input-row">
+      <button class="btn-primary" id="runBtn" onclick="runTest()">Run Test</button>
+      <label class="file-label" for="csvFileInput">Upload CSV</label>
+      <input type="file" id="csvFileInput" accept=".csv,.txt">
+      <button class="btn-ghost" onclick="clearAll()">Clear</button>
+    </div>
+    <div class="input-hint">Columns: Gemstone · Shape · shape_id · L · W · D · girdle_modifier · bulge_modifier · Actual_Weight</div>
+  </div>
+
+  <div id="resultsSection" style="display:none">
+
+    <div class="input-row">
+      <button class="btn-ghost" onclick="exportCSV()">Export CSV</button>
+      <button class="btn-ghost" onclick="removeOutliers()">Remove outliers (&gt;500% error)</button>
+    </div>
+
+    <div id="deletedBar" class="del-bar" style="display:none">
+      <span id="deletedCount"></span>
+      <button class="btn-ghost" style="padding:5px 12px;font-size:11px" onclick="restoreAll()">Restore all</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title" id="summaryTitle">Overall Accuracy</div>
+      <div class="stats-grid" id="summaryGrid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Breakdown by Shape</div>
+      <div class="breakdown-wrap" id="shapeBreakdown"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Scatter Plot — Predicted vs Actual</div>
+      <canvas id="scatterCanvas" class="scatter-canvas"></canvas>
+      <div id="scatterTooltip"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" id="tableTitle">Full Results</div>
+      <div class="table-wrap">
+        <table class="results-table" id="resultsTable"></table>
+      </div>
+      <div id="paginationControls" class="pagination"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+// ════════════════════════════════════════════════════
+// SHAPE & STONE DATA  (mirrored from index.html)
+// ════════════════════════════════════════════════════
+const SHAPES_DATA = {
+  round:    { kd: 0.00612, dims: 'round', sf: 0.00180, cv: 0.02 },
+  oec:      { kd: 0.00600, dims: 'round', sf: 0.00180, cv: 0.08 },
+  omc:      { kd: 0.00615, dims: 'lwd',   sf: 0.00180, cv: 0.08 },
+  rose:     { kd: 0.00500, dims: 'lwd',   sf: 0.00150, cv: 0.08 },
+  oval:     { kd: 0.00650, dims: 'lwd',   sf: 0.00200, cv: 0.06 },
+  pear:     { kd: 0.00612, dims: 'lwd',   sf: 0.00180, cv: 0.06 },
+  marquise: { kd: 0.00583, dims: 'lwd',   sf: 0.00160, cv: 0.06 },
+  navette:  { kd: null,    dims: 'lwd',   sf: 0.00225, cv: 0.06 },
+  heart:    { kd: 0.00598, dims: 'lwd',   sf: 0.00175, cv: 0.06 },
+  cushion:  { kd: 0.00838, dims: 'lwd',   sf: 0.00220, cv: 0.06 },
+  princess: { kd: 0.00827, dims: 'lwd',   sf: 0.00230, cv: 0.03 },
+  rectcut:  { kd: 0.00757, dims: 'lwd',   sf: 0.00215, cv: 0.04 },
+  asscher:  { kd: 0.00861, dims: 'lwd',   sf: 0.00230, cv: 0.04 },
+  emerald:  { kd: 0.00890, dims: 'lwd',   sf: 0.00250, cv: 0.04 },
+  radiant:  { kd: 0.00820, dims: 'lwd',   sf: 0.00250, cv: 0.05 },
+  trillion: { kd: 0.00510, dims: 'lwd',   sf: 0.00170, cv: 0.06 },
+  baguette: { kd: 0.00915, dims: 'lwd',   sf: 0.00250, cv: 0.04 },
+  cabochon: { kd: null,    dims: 'lwd',   sf: 0.00270, cv: 0.08 },
+};
+
+const STONE_SG = {
+  Diamond: 3.52, Ruby: 4.00, Sapphire: 4.00, Emerald: 2.72,
+  Amethyst: 2.65, Aquamarine: 2.72, Citrine: 2.65, Topaz: 3.53,
+  Tanzanite: 3.35, Tourmaline: 3.06, Spinel: 3.60,
+};
+
+// IGI SG ranges — used by Monte Carlo to triangularly sample density
+const STONES_DATA = {
+  Diamond:    { sg: 3.52, sgMin: 3.50, sgMax: 3.53 },
+  Ruby:       { sg: 4.00, sgMin: 3.97, sgMax: 4.05 },
+  Sapphire:   { sg: 4.00, sgMin: 3.95, sgMax: 4.03 },
+  Emerald:    { sg: 2.72, sgMin: 2.67, sgMax: 2.78 },
+  Amethyst:   { sg: 2.65, sgMin: 2.64, sgMax: 2.66 },
+  Aquamarine: { sg: 2.72, sgMin: 2.68, sgMax: 2.74 },
+  Citrine:    { sg: 2.65, sgMin: 2.64, sgMax: 2.66 },
+  Topaz:      { sg: 3.53, sgMin: 3.49, sgMax: 3.57 },
+  Tanzanite:  { sg: 3.35, sgMin: 3.33, sgMax: 3.36 },
+  Tourmaline: { sg: 3.06, sgMin: 2.82, sgMax: 3.90 },
+  Spinel:     { sg: 3.60, sgMin: 3.54, sgMax: 3.63 },
+};
+
+const MC_N = 800; // iterations per row at small scale — see getMcIterations for large datasets
+const MC_BUDGET = 4e7; // total samples across all rows — keeps large CSVs responsive
+
+// Iterations per row, scaled down for large datasets so total work stays bounded.
+function getMcIterations(rowCount) {
+  return Math.max(50, Math.min(MC_N, Math.round(MC_BUDGET / Math.max(rowCount, 1))));
+}
+
+// ════════════════════════════════════════════════════
+// PURE CALCULATION FUNCTIONS
+// These are also serialised into the Web Worker via .toString()
+// ════════════════════════════════════════════════════
+
+function getLWAdj(shapeId, L, W) {
+  const cfg = {
+    oval:     { ideal: 1.33, sens: 0.1 },
+    pear:     { ideal: 1.50, sens: 0.1 },
+    marquise: { ideal: 2.00, sens: 0.1 },
+  }[shapeId];
+  if (!cfg || !L || !W) return 1.0;
+  return Math.max(0.85, Math.min(1.15, 1 + (cfg.ideal - L / W) * cfg.sens));
+}
+
+function calcWeight(shapeId, L, W, D, girdle, bulge, stoneName, sg) {
+  const sh = SHAPES_DATA[shapeId];
+  if (!sh || !L || !W || !D) return null;
+  let calcL, calcW;
+  if (sh.dims === 'round') {
+    const avg = (L + W) / 2;
+    calcL = avg; calcW = avg;
+  } else {
+    calcL = Math.max(L, W);
+    calcW = Math.min(L, W);
+  }
+  const lwAdj = getLWAdj(shapeId, calcL, calcW);
+  const isDiamond = (stoneName === 'Diamond');
+  const effKd = sh.kd !== null ? sh.kd * lwAdj : null;
+  let ct;
+  if (isDiamond && effKd !== null) {
+    ct = calcL * calcW * D * effKd;
+  } else {
+    const effSg = sg || STONE_SG[stoneName] || 3.52;
+    ct = calcL * calcW * D * sh.sf * lwAdj * effSg;
+  }
+  return ct * (girdle || 1) * (bulge || 1);
+}
+
+// Approximate normal sample N(mu, sigma) via Irwin-Hall (sum of 4 uniforms).
+// Avoids transcendental calls (log/cos) so it's cheap enough for large-scale Monte Carlo.
+const IRWIN_HALL_4_SCALE = Math.sqrt(3); // normalizes sum-of-4 variance (1/3) to 1
+function normalSample(mu, sigma) {
+  const u = Math.random() + Math.random() + Math.random() + Math.random();
+  return mu + sigma * (u - 2) * IRWIN_HALL_4_SCALE;
+}
+
+// Triangular distribution with peak at mode
+function triangularSample(min, mode, max) {
+  if (min >= max) return min;
+  const u = Math.random();
+  const f = (mode - min) / (max - min);
+  if (u < f) return min + Math.sqrt(u * (max - min) * (mode - min));
+  return max - Math.sqrt((1 - u) * (max - min) * (max - mode));
+}
+
+// Monte Carlo mean — samples measurement noise, SG range, and shape CV
+function calcWeightMC(shapeId, L, W, D, girdle, bulge, stoneName, sg, mcIter) {
+  const sh = SHAPES_DATA[shapeId];
+  if (!sh || !L || !W || !D) return null;
+  const isDiamond = (stoneName === 'Diamond');
+  let calcL0, calcW0;
+  if (sh.dims === 'round') {
+    const avg = (L + W) / 2; calcL0 = avg; calcW0 = avg;
+  } else {
+    calcL0 = Math.max(L, W); calcW0 = Math.min(L, W);
+  }
+  const lwAdj = getLWAdj(shapeId, calcL0, calcW0);
+  const effKd = sh.kd !== null ? sh.kd * lwAdj : null;
+  const stData = STONES_DATA[stoneName];
+  const sgNom  = sg || STONE_SG[stoneName] || 3.52;
+  const sgMin  = stData ? stData.sgMin : sgNom - 0.02;
+  const sgMode = stData ? stData.sg   : sgNom;
+  const sgMax  = stData ? stData.sgMax : sgNom + 0.02;
+  const sigma  = 0.01; // Presidium caliper 1σ
+  const cv     = sh.cv || 0.05;
+  const n = mcIter || MC_N;
+  var sum = 0;
+  for (var i = 0; i < n; i++) {
+    var sL, sW, sD;
+    if (sh.dims === 'round') {
+      const avg = (normalSample(L, sigma) + normalSample(W, sigma)) / 2;
+      sL = avg; sW = avg;
+    } else {
+      const rL = normalSample(L, sigma), rW = normalSample(W, sigma);
+      sL = Math.max(rL, rW); sW = Math.min(rL, rW);
+    }
+    sD = normalSample(D, sigma);
+    const sSg = triangularSample(sgMin, sgMode, sgMax);
+    var ct;
+    if (isDiamond && effKd !== null) {
+      ct = sL * sW * sD * effKd * (sSg / 3.52);
+    } else {
+      ct = sL * sW * sD * sh.sf * lwAdj * sSg;
+    }
+    ct *= (girdle || 1) * (bulge || 1) * normalSample(1.0, cv);
+    sum += ct;
+  }
+  return sum / n;
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/).filter(function(l) { return l.trim(); });
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(function(h) { return h.trim(); });
+  const rows = [];
+  for (var i = 1; i < lines.length; i++) {
+    const vals = lines[i].split(',').map(function(v) { return v.trim(); });
+    const r = {};
+    headers.forEach(function(h, j) { r[h] = vals[j] || ''; });
+    const row = {
+      index:      i,
+      gemstone:   r['Gemstone']   || '',
+      shape:      r['Shape']      || '',
+      shape_id:   r['shape_id']   || '',
+      L:          parseFloat(r['L'])  || 0,
+      W:          parseFloat(r['W'])  || 0,
+      D:          parseFloat(r['D'])  || 0,
+      girdle_mod: parseFloat(r['girdle_modifier']) || 1.0,
+      bulge_mod:  parseFloat(r['bulge_modifier'])  || 1.0,
+      sg:         parseFloat(r['SG']) || 0,
+      actual:     parseFloat(r['Actual_Weight']) || 0,
+    };
+    if (row.shape_id && row.L && row.W && row.D && row.actual) rows.push(row);
+  }
+  return rows;
+}
+
+function processRows(rows) {
+  const mcIter = getMcIterations(rows.length);
+  return rows.map(function(r) {
+    const sg = r.sg || null;
+    const base     = calcWeight(r.shape_id, r.L, r.W, r.D, 1.0,          1.0,         r.gemstone, sg);
+    const mc       = calcWeightMC(r.shape_id, r.L, r.W, r.D, r.girdle_mod, r.bulge_mod, r.gemstone, sg, mcIter);
+    const baseErr  = (base !== null && r.actual) ? (base - r.actual) / r.actual * 100 : null;
+    const mcErr    = (mc   !== null && r.actual) ? (mc   - r.actual) / r.actual * 100 : null;
+    return {
+      index: r.index, gemstone: r.gemstone, shape: r.shape, shape_id: r.shape_id,
+      L: r.L, W: r.W, D: r.D, girdle_mod: r.girdle_mod, bulge_mod: r.bulge_mod, actual: r.actual,
+      base: base, mc: mc,
+      baseErr: baseErr, mcErr: mcErr,
+      absBaseErr: baseErr !== null ? Math.abs(baseErr) : null,
+      absMcErr:   mcErr   !== null ? Math.abs(mcErr)   : null,
+    };
+  });
+}
+
+// ════════════════════════════════════════════════════
+// STATS  (Float64Array for speed at large n)
+// ════════════════════════════════════════════════════
+
+function computeStats(rows, errField) {
+  const errs = [];
+  for (var i = 0; i < rows.length; i++) {
+    const v = rows[i][errField];
+    if (v !== null && v !== undefined) errs.push(v);
+  }
+  if (!errs.length) return null;
+  const n = errs.length;
+  const typed  = new Float64Array(errs);
+  const sorted = new Float64Array(typed).sort();
+  let sumAbs = 0, w5 = 0, w10 = 0;
+  for (var j = 0; j < n; j++) {
+    const a = Math.abs(typed[j]);
+    sumAbs += a;
+    if (a <= 5)  w5++;
+    if (a <= 10) w10++;
+  }
+  const median = n % 2 ? sorted[Math.floor(n / 2)] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2;
+  return { mae: sumAbs / n, median: median, within5: w5 / n * 100, within10: w10 / n * 100, n: n };
+}
+
+function groupByShape(results) {
+  const map = {};
+  results.forEach(function(r) {
+    if (!map[r.shape_id]) map[r.shape_id] = { shape_id: r.shape_id, codes: {}, rows: [] };
+    map[r.shape_id].codes[r.shape] = true;
+    map[r.shape_id].rows.push(r);
+  });
+  return Object.values(map).sort(function(a, b) { return b.rows.length - a.rows.length; });
+}
+
+// ════════════════════════════════════════════════════
+// FORMATTING
+// ════════════════════════════════════════════════════
+
+function fmt2(v)  { return v === null ? '—' : v.toFixed(2); }
+function fmtPct(v, d) {
+  if (v === null) return '—';
+  d = d === undefined ? 1 : d;
+  return (v > 0 ? '+' : '') + v.toFixed(d) + '%';
+}
+function errBadge(v) {
+  if (v === null) return '<span style="color:var(--light)">—</span>';
+  const abs = Math.abs(v), cls = abs <= 5 ? 'err-ok' : abs <= 10 ? 'err-warn' : 'err-bad';
+  return '<span class="' + cls + '">' + (v > 0 ? '+' : '') + v.toFixed(1) + '%</span>';
+}
+
+// ════════════════════════════════════════════════════
+// RENDER — SUMMARY
+// ════════════════════════════════════════════════════
+
+function renderSummary(results) {
+  const bs = computeStats(results, 'baseErr');
+  const n  = results.length;
+  document.getElementById('summaryTitle').textContent =
+    'Overall Accuracy — ' + n.toLocaleString() + ' stone' + (n !== 1 ? 's' : '');
+
+  function col(stats, cls, label) {
+    if (!stats) return '';
+    return '<div class="stat-col">'
+      + '<div class="stat-col-title ' + cls + '">' + label + '</div>'
+      + '<div class="stat-row"><span class="stat-label">Stones tested</span><span class="stat-value">' + stats.n.toLocaleString() + '</span></div>'
+      + '<div class="stat-row"><span class="stat-label">Mean absolute error</span><span class="stat-value">' + stats.mae.toFixed(1) + '%</span></div>'
+      + '<div class="stat-row"><span class="stat-label">Median signed error</span><span class="stat-value">' + fmtPct(stats.median) + '</span></div>'
+      + '<div class="stat-row"><span class="stat-label">Within \xb15%</span><span class="stat-value">' + stats.within5.toFixed(0) + '%</span></div>'
+      + '<div class="stat-row"><span class="stat-label">Within \xb110%</span><span class="stat-value">' + stats.within10.toFixed(0) + '%</span></div>'
+      + '</div>';
+  }
+  const mcs = computeStats(results, 'mcErr');
+  document.getElementById('summaryGrid').innerHTML =
+    col(bs,  'base', 'Base formula — no modifiers') +
+    col(mcs, 'mc',   'Monte Carlo mean (n=' + getMcIterations(results.length) + ') — girdle + bulge applied');
+}
+
+// ════════════════════════════════════════════════════
+// RENDER — SHAPE BREAKDOWN
+// ════════════════════════════════════════════════════
+
+function renderShapeBreakdown(results) {
+  const groups = groupByShape(results);
+  const monoCell = function(v) { return '<td class="right" style="font-family:\'DM Mono\',monospace">' + v + '</td>'; };
+  const tbody = groups.map(function(g) {
+    const bs  = computeStats(g.rows, 'baseErr');
+    const mcs = computeStats(g.rows, 'mcErr');
+    const delta = (bs && mcs) ? bs.mae - mcs.mae : null;
+    let dHtml = '—';
+    if (delta !== null) {
+      if (Math.abs(delta) < 0.05) dHtml = '<span style="color:var(--mid)">0.0pp</span>';
+      else if (delta > 0)         dHtml = '<span style="color:var(--ok)">↓ ' + delta.toFixed(1) + 'pp</span>';
+      else                        dHtml = '<span style="color:var(--bad)">↑ ' + Math.abs(delta).toFixed(1) + 'pp</span>';
+    }
+    const codes = Object.keys(g.codes).filter(Boolean).join(', ') || '—';
+    return '<tr class="data-row">'
+      + '<td><span class="shape-tag">' + g.shape_id + '</span></td>'
+      + '<td style="color:var(--mid);font-family:\'DM Mono\',monospace;font-size:11px">' + codes + '</td>'
+      + '<td class="right">' + g.rows.length.toLocaleString() + '</td>'
+      + monoCell(bs ? bs.mae.toFixed(1)+'%' : '—')
+      + monoCell(bs ? fmtPct(bs.median) : '—')
+      + monoCell(bs ? bs.within5.toFixed(0)+'%' : '—')
+      + monoCell(mcs ? mcs.mae.toFixed(1)+'%' : '—')
+      + monoCell(mcs ? fmtPct(mcs.median) : '—')
+      + monoCell(mcs ? mcs.within5.toFixed(0)+'%' : '—')
+      + '<td class="right" style="font-family:\'DM Mono\',monospace">' + dHtml + '</td>'
+      + '</tr>';
+  }).join('');
+
+  document.getElementById('shapeBreakdown').innerHTML =
+    '<table class="breakdown-table"><thead>'
+    + '<tr>'
+    + '<th rowspan="2">Shape ID</th>'
+    + '<th rowspan="2">Industry Code(s)</th>'
+    + '<th rowspan="2" class="right">n</th>'
+    + '<th colspan="3" class="center" style="color:var(--series-base);border-left:2px solid var(--border)">Base</th>'
+    + '<th colspan="3" class="center" style="color:var(--series-mc);border-left:2px solid var(--border)">Monte Carlo</th>'
+    + '<th rowspan="2" class="right">Δ MAE</th>'
+    + '</tr><tr>'
+    + '<th class="right" style="border-left:2px solid var(--border)">MAE</th><th class="right">Med</th><th class="right">≤5%</th>'
+    + '<th class="right" style="border-left:2px solid var(--border)">MAE</th><th class="right">Med</th><th class="right">≤5%</th>'
+    + '</tr></thead><tbody>' + tbody + '</tbody></table>';
+}
+
+// ════════════════════════════════════════════════════
+// RENDER — SCATTER PLOT (Canvas)
+// ════════════════════════════════════════════════════
+
+let _scatterPoints = [];
+let _scatterGrid = {};
+let _legendHitAreas = [];
+let _showBase = true, _showMC = true;
+let _sampledScatter = false, _scatterSampleN = 0;
+const SCATTER_GRID_SIZE = 16;
+const MAX_SCATTER_POINTS = 20000;
+
+function findNearestScatterPoint(cx, cy) {
+  const gx = (cx / SCATTER_GRID_SIZE) | 0, gy = (cy / SCATTER_GRID_SIZE) | 0;
+  var nearest = null, best = Infinity;
+  for (var dx = -1; dx <= 1; dx++) {
+    for (var dy = -1; dy <= 1; dy++) {
+      const idxs = _scatterGrid[(gx + dx) + ',' + (gy + dy)];
+      if (!idxs) continue;
+      for (var k = 0; k < idxs.length; k++) {
+        const p = _scatterPoints[idxs[k]];
+        const d = Math.hypot(p.x - cx, p.y - cy);
+        if (d < best && d < 14) { best = d; nearest = p; }
+      }
+    }
+  }
+  return nearest;
+}
+
+function niceTicks(lo, hi, n) {
+  const range = hi - lo || 1, rough = range / n;
+  const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+  const step = mag * ([1, 2, 2.5, 5, 10].find(function(s) { return mag * s >= rough; }) || 10);
+  const start = Math.ceil(lo / step) * step;
+  const ticks = [];
+  for (var v = start; v <= hi + step * 0.01; v += step) ticks.push(+v.toFixed(8));
+  return ticks;
+}
+
+function drawScatterPlot(results) {
+  const canvas = document.getElementById('scatterCanvas');
+  if (!canvas) return;
+
+  const DPR  = Math.min(window.devicePixelRatio || 1, 2);
+  const cssW = Math.max(canvas.offsetWidth || 680, 400);
+  const cssH = Math.round(cssW * (440 / 680));
+  canvas.width  = Math.round(cssW * DPR);
+  canvas.height = Math.round(cssH * DPR);
+  canvas.style.height = cssH + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(DPR, DPR);
+  const W = cssW, H = cssH;
+  const M = { t: 28, r: 172, b: 56, l: 64 };
+  const CW = W - M.l - M.r, CH = H - M.t - M.b;
+
+  ctx.clearRect(0, 0, W, H);
+
+  if (!results.length) {
+    ctx.font = '13px DM Sans, sans-serif';
+    ctx.fillStyle = '#B5AFA9';
+    ctx.textAlign = 'center';
+    ctx.fillText('No data to display', W / 2, H / 2);
+    return;
+  }
+
+  let dMin = Infinity, dMax = -Infinity;
+  for (var ri = 0; ri < results.length; ri++) {
+    const r = results[ri];
+    if (r.actual < dMin) dMin = r.actual; if (r.actual > dMax) dMax = r.actual;
+    if (r.base !== null) { if (r.base < dMin) dMin = r.base; if (r.base > dMax) dMax = r.base; }
+    if (r.mc   !== null) { if (r.mc   < dMin) dMin = r.mc;   if (r.mc   > dMax) dMax = r.mc; }
+  }
+  const pad  = Math.max((dMax - dMin) * 0.10, 0.05);
+  const axMin = Math.max(0, dMin - pad), axMax = dMax + pad;
+
+  function sx(v) { return M.l + (v - axMin) / (axMax - axMin) * CW; }
+  function sy(v) { return M.t + CH - (v - axMin) / (axMax - axMin) * CH; }
+  const ticks = niceTicks(axMin, axMax, 6);
+
+  // Grid
+  ctx.strokeStyle = '#EDE7DF'; ctx.lineWidth = 1;
+  ticks.forEach(function(v) {
+    ctx.beginPath(); ctx.moveTo(sx(v), M.t); ctx.lineTo(sx(v), M.t + CH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(M.l, sy(v)); ctx.lineTo(M.l + CW, sy(v)); ctx.stroke();
+  });
+
+  // Clip to chart area for bands + points
+  ctx.save();
+  ctx.beginPath(); ctx.rect(M.l, M.t, CW, CH); ctx.clip();
+
+  ctx.fillStyle = '#F0EBE2';
+  ctx.beginPath();
+  ctx.moveTo(sx(axMin), sy(axMin * 1.10)); ctx.lineTo(sx(axMax), sy(axMax * 1.10));
+  ctx.lineTo(sx(axMax), sy(axMax * 0.90)); ctx.lineTo(sx(axMin), sy(axMin * 0.90));
+  ctx.fill();
+
+  ctx.fillStyle = '#E7E0D5';
+  ctx.beginPath();
+  ctx.moveTo(sx(axMin), sy(axMin * 1.05)); ctx.lineTo(sx(axMax), sy(axMax * 1.05));
+  ctx.lineTo(sx(axMax), sy(axMax * 0.95)); ctx.lineTo(sx(axMin), sy(axMin * 0.95));
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(196,151,58,0.65)'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
+  ctx.beginPath(); ctx.moveTo(sx(axMin), sy(axMin)); ctx.lineTo(sx(axMax), sy(axMax)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Points — one batched path per series. For large datasets, sample with a
+  // fixed stride so the canvas never has to rasterize more than ~MAX_SCATTER_POINTS
+  // arcs per series (full data is still used for stats/table).
+  _scatterPoints = [];
+  _scatterGrid = {};
+  const PT = 3;
+  const stride = Math.max(1, Math.ceil(results.length / MAX_SCATTER_POINTS));
+  _sampledScatter = stride > 1;
+  _scatterSampleN = 0;
+
+  function addScatterPoint(px, py, type, row) {
+    const idx = _scatterPoints.length;
+    _scatterPoints.push({ x: px, y: py, type: type, row: row });
+    const key = ((px / SCATTER_GRID_SIZE) | 0) + ',' + ((py / SCATTER_GRID_SIZE) | 0);
+    (_scatterGrid[key] || (_scatterGrid[key] = [])).push(idx);
+  }
+
+  if (_showBase) {
+    ctx.fillStyle = 'rgba(196,151,58,0.6)';
+    ctx.beginPath();
+    for (var i = 0; i < results.length; i += stride) {
+      const r = results[i];
+      if (r.base === null) continue;
+      const px = sx(r.actual), py = sy(r.base);
+      addScatterPoint(px, py, 'base', r);
+      ctx.moveTo(px + PT, py); ctx.arc(px, py, PT, 0, Math.PI * 2);
+      _scatterSampleN++;
+    }
+    ctx.fill();
+  }
+
+  if (_showMC) {
+    ctx.fillStyle = 'rgba(72,180,132,0.6)';
+    ctx.beginPath();
+    for (var i = 0; i < results.length; i += stride) {
+      const r = results[i];
+      if (r.mc === null) continue;
+      const px = sx(r.actual), py = sy(r.mc);
+      addScatterPoint(px, py, 'mc', r);
+      ctx.moveTo(px + PT, py); ctx.arc(px, py, PT, 0, Math.PI * 2);
+    }
+    ctx.fill();
+  }
+
+  ctx.restore(); // end clip
+
+  // Chart border
+  ctx.strokeStyle = '#DDD6CC'; ctx.lineWidth = 1;
+  ctx.strokeRect(M.l, M.t, CW, CH);
+
+  // Axis ticks + labels
+  ctx.fillStyle = '#6B6460'; ctx.strokeStyle = '#B5AFA9'; ctx.lineWidth = 1;
+  ticks.forEach(function(v) {
+    const lbl = v < 0.10 ? v.toFixed(3) : v.toFixed(2);
+    ctx.beginPath(); ctx.moveTo(sx(v), M.t + CH); ctx.lineTo(sx(v), M.t + CH + 5); ctx.stroke();
+    ctx.font = '10px DM Mono, monospace'; ctx.textAlign = 'center';
+    ctx.fillStyle = '#6B6460'; ctx.fillText(lbl, sx(v), M.t + CH + 17);
+    ctx.beginPath(); ctx.moveTo(M.l - 5, sy(v)); ctx.lineTo(M.l, sy(v)); ctx.stroke();
+    ctx.textAlign = 'right'; ctx.fillText(lbl, M.l - 9, sy(v) + 4);
+  });
+
+  ctx.font = '11px DM Sans, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#6B6460';
+  ctx.fillText('Actual weight (ct)', M.l + CW / 2, H - 6);
+  ctx.save();
+  ctx.translate(14, M.t + CH / 2); ctx.rotate(-Math.PI / 2);
+  ctx.fillText('Predicted weight (ct)', 0, 0);
+  ctx.restore();
+
+  // Legend — clickable toggles; hit areas stored in CSS-pixel space
+  const lx = M.l + CW + 16, ly = M.t + 8;
+  _legendHitAreas = [
+    { key: 'base', x: lx, y: ly,      w: 82, h: 20 },
+    { key: 'mc',   x: lx, y: ly + 20, w: 82, h: 20 },
+  ];
+
+  ctx.font = '11px DM Sans, sans-serif'; ctx.textAlign = 'left';
+
+  // Base calc row
+  ctx.globalAlpha = _showBase ? 1 : 0.3;
+  ctx.fillStyle = 'rgba(196,151,58,0.8)';
+  ctx.beginPath(); ctx.arc(lx + 6, ly + 6, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = _showBase ? '#6B6460' : '#C0BAB4';
+  ctx.fillText('Base calc', lx + 16, ly + 10);
+  if (!_showBase) {
+    const tw = ctx.measureText('Base calc').width;
+    ctx.strokeStyle = '#C0BAB4'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(lx + 16, ly + 5); ctx.lineTo(lx + 16 + tw, ly + 5); ctx.stroke();
+  }
+
+  // Monte Carlo row
+  ctx.globalAlpha = _showMC ? 1 : 0.3;
+  ctx.fillStyle = 'rgba(72,180,132,0.8)';
+  ctx.beginPath(); ctx.arc(lx + 6, ly + 26, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = _showMC ? '#6B6460' : '#C0BAB4';
+  ctx.fillText('Monte Carlo', lx + 16, ly + 30);
+  if (!_showMC) {
+    const tw3 = ctx.measureText('Monte Carlo').width;
+    ctx.strokeStyle = '#C0BAB4'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(lx + 16, ly + 25); ctx.lineTo(lx + 16 + tw3, ly + 25); ctx.stroke();
+  }
+
+  ctx.strokeStyle = 'rgba(196,151,58,0.65)'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
+  ctx.beginPath(); ctx.moveTo(lx, ly + 48); ctx.lineTo(lx + 12, ly + 48); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.font = '10px DM Sans, sans-serif'; ctx.fillStyle = '#B5AFA9';
+  ctx.fillText('y = x', lx + 16, ly + 52);
+
+  ctx.fillStyle = '#E7E0D5'; ctx.fillRect(lx, ly + 63, 12, 9);
+  ctx.fillStyle = '#B5AFA9'; ctx.fillText('\xb15% band', lx + 16, ly + 71);
+
+  ctx.fillStyle = '#F0EBE2'; ctx.fillRect(lx, ly + 79, 12, 9);
+  ctx.fillStyle = '#B5AFA9'; ctx.fillText('\xb110% band', lx + 16, ly + 87);
+
+  ctx.font = '10px DM Mono, monospace';
+  ctx.fillText('n = ' + results.length.toLocaleString(), lx, ly + 108);
+  if (_sampledScatter) {
+    ctx.fillStyle = '#B5AFA9';
+    ctx.fillText('(' + _scatterSampleN.toLocaleString() + ' plotted,', lx, ly + 122);
+    ctx.fillText('1 in ' + stride + ' sampled)', lx, ly + 134);
+  }
+}
+
+// ── Canvas tooltip (attached once, reads _scatterPoints on each event) ──
+let _canvasReady = false, _tooltipRAF = false;
+
+function ensureCanvasTooltip() {
+  if (_canvasReady) return;
+  const canvas = document.getElementById('scatterCanvas');
+  const tip    = document.getElementById('scatterTooltip');
+  if (!canvas || !tip) return;
+
+  canvas.addEventListener('mousemove', function(e) {
+    if (_tooltipRAF) return;
+    _tooltipRAF = true;
+    requestAnimationFrame(function() {
+      _tooltipRAF = false;
+      const rect = canvas.getBoundingClientRect();
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+
+      // Legend hover — pointer cursor, suppress tooltip
+      for (var li = 0; li < _legendHitAreas.length; li++) {
+        const h = _legendHitAreas[li];
+        if (cx >= h.x && cx <= h.x + h.w && cy >= h.y && cy <= h.y + h.h) {
+          tip.style.display = 'none';
+          canvas.style.cursor = 'pointer';
+          return;
+        }
+      }
+
+      var nearest = findNearestScatterPoint(cx, cy);
+      if (nearest) {
+        const r   = nearest.row;
+        const val = nearest.type === 'base' ? r.base : r.mc;
+        const err = nearest.type === 'base' ? r.baseErr : r.mcErr;
+        const col = nearest.type === 'base' ? '#E8C97A' : '#72D4A4';
+        const lbl = nearest.type === 'base' ? 'Base calc' : 'Monte Carlo';
+        const errStr = err !== null ? (err > 0 ? '+' : '') + err.toFixed(1) + '%' : '—';
+        tip.style.cssText = 'display:block;left:' + (e.clientX + 14) + 'px;top:' + (e.clientY - 44) + 'px';
+        tip.innerHTML =
+          '<div style="color:' + col + ';font-weight:500;margin-bottom:3px">#' + r.index + ' — ' + r.gemstone + ' ' + r.shape + ' (' + r.shape_id + ')</div>'
+          + '<div>' + r.L.toFixed(2) + ' \xd7 ' + r.W.toFixed(2) + ' \xd7 ' + r.D.toFixed(2) + ' mm</div>'
+          + '<div>Actual: <strong>' + r.actual.toFixed(2) + ' ct</strong></div>'
+          + '<div>' + lbl + ': <strong>' + (val !== null ? val.toFixed(2) : '—') + ' ct</strong> (' + errStr + ')</div>'
+          + (nearest.type !== 'base' ? '<div style="color:#888;font-size:10px;margin-top:2px">Girdle \xd7' + r.girdle_mod.toFixed(2) + ' \xb7 Bulge \xd7' + r.bulge_mod.toFixed(2) + '</div>' : '')
+          + '<div style="color:#888;font-size:10px;margin-top:4px">Click to jump to row in table</div>';
+        canvas.style.cursor = 'pointer';
+      } else {
+        tip.style.display = 'none';
+        canvas.style.cursor = 'crosshair';
+      }
+    });
+  });
+
+  canvas.addEventListener('mouseleave', function() {
+    tip.style.display = 'none';
+    canvas.style.cursor = 'crosshair';
+  });
+
+  canvas.addEventListener('click', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.clientX - rect.left;
+    const cy = e.clientY - rect.top;
+
+    // Legend toggle check first
+    for (var li = 0; li < _legendHitAreas.length; li++) {
+      const h = _legendHitAreas[li];
+      if (cx >= h.x && cx <= h.x + h.w && cy >= h.y && cy <= h.y + h.h) {
+        if (h.key === 'base') _showBase = !_showBase;
+        else                   _showMC  = !_showMC;
+        tip.style.display = 'none';
+        drawScatterPlot(_currentResults);
+        return;
+      }
+    }
+
+    // Scatter point navigation
+    var nearest = findNearestScatterPoint(cx, cy);
+    if (!nearest) return;
+    tip.style.display = 'none';
+    const pageNum = findRowPage(nearest.row.index);
+    goToPage(pageNum);
+    setTimeout(function() { highlightRow(nearest.row.index); }, 60);
+  });
+
+  _canvasReady = true;
+}
+
+// ════════════════════════════════════════════════════
+// RENDER — RESULTS TABLE  (paginated, sortable, deletable)
+// ════════════════════════════════════════════════════
+
+let _allResults     = [];
+let _currentResults = [];
+let _currentPage    = 0;
+const PAGE_SIZE     = 200;
+let _sortCol = 'index', _sortDir = 1;
+
+const SORT_COLS = {
+  index:      function(r) { return r.index; },
+  actual:     function(r) { return r.actual; },
+  base:       function(r) { return r.base      !== null ? r.base      : Infinity; },
+  absBaseErr: function(r) { return r.absBaseErr !== null ? r.absBaseErr : Infinity; },
+  mc:         function(r) { return r.mc         !== null ? r.mc         : Infinity; },
+  absMcErr:   function(r) { return r.absMcErr   !== null ? r.absMcErr   : Infinity; },
+};
+
+function sortArrow(col) {
+  if (_sortCol !== col) return '<span style="color:var(--border);font-size:9px;margin-left:2px">⇅</span>';
+  return '<span class="sort-arrow">' + (_sortDir === 1 ? '↑' : '↓') + '</span>';
+}
+
+function renderTable(results) {
+  _allResults     = results.slice();
+  _currentResults = results.slice();
+  _currentPage    = 0;
+  renderTablePage();
+}
+
+function renderTablePage() {
+  const total = _currentResults.length;
+  const titleEl = document.getElementById('tableTitle');
+  if (titleEl) titleEl.textContent = 'Full Results — ' + total.toLocaleString() + ' stone' + (total !== 1 ? 's' : '');
+
+  const fn = SORT_COLS[_sortCol] || SORT_COLS.index;
+  const sorted = _currentResults.slice().sort(function(a, b) {
+    const av = fn(a), bv = fn(b);
+    return (av > bv ? 1 : av < bv ? -1 : 0) * _sortDir;
+  });
+
+  const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
+  if (_currentPage >= totalPages) _currentPage = totalPages - 1;
+
+  const page = sorted.slice(_currentPage * PAGE_SIZE, (_currentPage + 1) * PAGE_SIZE);
+
+  const thead = '<thead><tr>'
+    + '<th onclick="sortBy(\'index\')">#' + sortArrow('index') + '</th>'
+    + '<th>Stone</th><th>Shape</th>'
+    + '<th class="right">L</th><th class="right">W</th><th class="right">D</th>'
+    + '<th class="right" onclick="sortBy(\'actual\')">Actual' + sortArrow('actual') + '</th>'
+    + '<th class="right" onclick="sortBy(\'base\')">Base' + sortArrow('base') + '</th>'
+    + '<th class="right" onclick="sortBy(\'absBaseErr\')">Base Err' + sortArrow('absBaseErr') + '</th>'
+    + '<th class="right">Girdle</th><th class="right">Bulge</th>'
+    + '<th class="right" onclick="sortBy(\'mc\')">MC Mean' + sortArrow('mc') + '</th>'
+    + '<th class="right" onclick="sortBy(\'absMcErr\')">MC Err' + sortArrow('absMcErr') + '</th>'
+    + '<th></th>'
+    + '</tr></thead>';
+
+  const tbody = page.map(function(r) {
+    const gBold = r.girdle_mod !== 1, bBold = r.bulge_mod !== 1;
+    return '<tr>'
+      + '<td style="color:var(--light)">' + r.index + '</td>'
+      + '<td style="font-family:\'DM Sans\',sans-serif">' + r.gemstone + '</td>'
+      + '<td><span class="shape-tag">' + r.shape_id + '</span> <span style="color:var(--mid);font-size:10px;font-family:\'DM Mono\',monospace">' + r.shape + '</span></td>'
+      + '<td class="right">' + r.L.toFixed(2) + '</td>'
+      + '<td class="right">' + r.W.toFixed(2) + '</td>'
+      + '<td class="right">' + r.D.toFixed(2) + '</td>'
+      + '<td class="right"><strong>' + r.actual.toFixed(2) + '</strong></td>'
+      + '<td class="right">' + fmt2(r.base) + '</td>'
+      + '<td class="right">' + errBadge(r.baseErr) + '</td>'
+      + '<td class="right" style="color:var(--mid)">' + (gBold ? '<strong>' : '') + '\xd7' + r.girdle_mod.toFixed(2) + (gBold ? '</strong>' : '') + '</td>'
+      + '<td class="right" style="color:var(--mid)">' + (bBold ? '<strong>' : '') + '\xd7' + r.bulge_mod.toFixed(2)  + (bBold ? '</strong>' : '') + '</td>'
+      + '<td class="right">' + fmt2(r.mc) + '</td>'
+      + '<td class="right">' + errBadge(r.mcErr) + '</td>'
+      + '<td style="padding:4px 6px"><button class="del-btn" onclick="deleteRow(' + r.index + ')" title="Remove entry">\xd7</button></td>'
+      + '</tr>';
+  }).join('');
+
+  document.getElementById('resultsTable').innerHTML = thead + '<tbody>' + tbody + '</tbody>';
+  renderPagination(total, totalPages);
+}
+
+function renderPagination(total, totalPages) {
+  const ctrl = document.getElementById('paginationControls');
+  if (!ctrl) return;
+  if (totalPages <= 1) { ctrl.innerHTML = ''; return; }
+  const cp    = _currentPage;
+  const start = cp * PAGE_SIZE + 1;
+  const end   = Math.min((cp + 1) * PAGE_SIZE, total);
+  ctrl.innerHTML =
+    '<span class="pg-info">Showing ' + start.toLocaleString() + '–' + end.toLocaleString() + ' of ' + total.toLocaleString() + '</span>'
+    + '<div class="pg-btns">'
+    + '<button class="pg-btn" onclick="goToPage(0)"' + (cp===0?' disabled':'') + '>\xab</button>'
+    + '<button class="pg-btn" onclick="goToPage(' + (cp-1) + ')"' + (cp===0?' disabled':'') + '>‹</button>'
+    + '<span class="pg-label">Page ' + (cp+1) + ' of ' + totalPages + '</span>'
+    + '<button class="pg-btn" onclick="goToPage(' + (cp+1) + ')"' + (cp>=totalPages-1?' disabled':'') + '>›</button>'
+    + '<button class="pg-btn" onclick="goToPage(' + (totalPages-1) + ')"' + (cp>=totalPages-1?' disabled':'') + '>\xbb</button>'
+    + '</div>';
+}
+
+function goToPage(n) {
+  _currentPage = n;
+  renderTablePage();
+  document.getElementById('tableTitle').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function findRowPage(rowIndex) {
+  const fn = SORT_COLS[_sortCol] || SORT_COLS.index;
+  const sorted = _currentResults.slice().sort(function(a, b) {
+    const av = fn(a), bv = fn(b);
+    return (av > bv ? 1 : av < bv ? -1 : 0) * _sortDir;
+  });
+  const pos = sorted.findIndex(function(r) { return r.index === rowIndex; });
+  return pos === -1 ? 0 : Math.floor(pos / PAGE_SIZE);
+}
+
+function highlightRow(rowIndex) {
+  const rows = document.querySelectorAll('#resultsTable tbody tr');
+  for (var i = 0; i < rows.length; i++) {
+    const firstCell = rows[i].querySelector('td');
+    if (firstCell && firstCell.textContent.trim() === String(rowIndex)) {
+      rows[i].classList.remove('highlight-row');
+      void rows[i].offsetWidth; // force reflow so animation restarts if already highlighted
+      rows[i].classList.add('highlight-row');
+      rows[i].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      var tr = rows[i];
+      setTimeout(function() { tr.classList.remove('highlight-row'); }, 1500);
+      break;
+    }
+  }
+}
+
+function sortBy(col) {
+  if (_sortCol === col) _sortDir *= -1;
+  else { _sortCol = col; _sortDir = 1; }
+  _currentPage = 0;
+  renderTablePage();
+}
+
+// ════════════════════════════════════════════════════
+// EXPORT / OUTLIER REMOVAL
+// ════════════════════════════════════════════════════
+
+const OUTLIER_THRESHOLD = 500; // % error — flags likely data-entry errors, not formula errors
+
+function csvField(v) {
+  const s = String(v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+function exportCSV() {
+  if (!_currentResults.length) { alert('No results to export.'); return; }
+  const headers = ['Index','Gemstone','Shape','shape_id','L','W','D','girdle_modifier','bulge_modifier','Actual_Weight','Base_Calc','Base_Error_Pct','MC_Mean','MC_Error_Pct'];
+  const lines = [headers.join(',')];
+  _currentResults.forEach(function(r) {
+    lines.push([
+      r.index, csvField(r.gemstone), csvField(r.shape), csvField(r.shape_id),
+      r.L, r.W, r.D, r.girdle_mod, r.bulge_mod, r.actual,
+      r.base !== null ? r.base.toFixed(4) : '',
+      r.baseErr !== null ? r.baseErr.toFixed(2) : '',
+      r.mc !== null ? r.mc.toFixed(4) : '',
+      r.mcErr !== null ? r.mcErr.toFixed(2) : '',
+    ].join(','));
+  });
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'lithomass-results.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function removeOutliers() {
+  const before = _currentResults.length;
+  _currentResults = _currentResults.filter(function(r) {
+    return (r.absBaseErr === null || r.absBaseErr <= OUTLIER_THRESHOLD)
+        && (r.absMcErr   === null || r.absMcErr   <= OUTLIER_THRESHOLD);
+  });
+  const removed = before - _currentResults.length;
+  if (removed === 0) { alert('No entries found with error over ' + OUTLIER_THRESHOLD + '%.'); return; }
+  rerenderAll();
+}
+
+// ════════════════════════════════════════════════════
+// DELETE / RESTORE
+// ════════════════════════════════════════════════════
+
+function deleteRow(rowIndex) {
+  _currentResults = _currentResults.filter(function(r) { return r.index !== rowIndex; });
+  rerenderAll();
+}
+
+function restoreAll() {
+  _currentResults = _allResults.slice();
+  rerenderAll();
+}
+
+function rerenderAll() {
+  const deleted = _allResults.length - _currentResults.length;
+  const bar = document.getElementById('deletedBar');
+  if (bar) {
+    if (deleted > 0) {
+      bar.style.display = '';
+      document.getElementById('deletedCount').textContent =
+        deleted.toLocaleString() + ' entr' + (deleted !== 1 ? 'ies' : 'y') + ' removed from analysis';
+    } else {
+      bar.style.display = 'none';
+    }
+  }
+  renderSummary(_currentResults);
+  renderShapeBreakdown(_currentResults);
+  drawScatterPlot(_currentResults);
+  renderTablePage();
+}
+
+// ════════════════════════════════════════════════════
+// WEB WORKER  (inline via Blob URL — keeps file standalone)
+// Pure functions are serialised with .toString() so they run
+// off the main thread without blocking the UI during parsing.
+// ════════════════════════════════════════════════════
+
+let _worker = null;
+
+function spawnWorker() {
+  if (_worker) { _worker.terminate(); }
+  const src = [
+    'const SHAPES_DATA=' + JSON.stringify(SHAPES_DATA) + ';',
+    'const STONE_SG='    + JSON.stringify(STONE_SG)    + ';',
+    'const STONES_DATA=' + JSON.stringify(STONES_DATA) + ';',
+    'const MC_N='        + MC_N                        + ';',
+    'const MC_BUDGET='   + MC_BUDGET                   + ';',
+    'const IRWIN_HALL_4_SCALE=' + IRWIN_HALL_4_SCALE   + ';',
+    getLWAdj.toString()          + ';',
+    calcWeight.toString()        + ';',
+    getMcIterations.toString()   + ';',
+    normalSample.toString()      + ';',
+    triangularSample.toString()  + ';',
+    calcWeightMC.toString()      + ';',
+    parseCSV.toString()          + ';',
+    processRows.toString()       + ';',
+    'self.onmessage=function(e){',
+    '  try{',
+    '    var raw=parseCSV(e.data);',
+    '    var res=processRows(raw);',
+    '    self.postMessage({ok:true,results:res});',
+    '  }catch(err){self.postMessage({ok:false,error:err.message});}',
+    '};',
+  ].join('\n');
+  _worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'application/javascript' })));
+  return _worker;
+}
+
+// ════════════════════════════════════════════════════
+// MAIN
+// ════════════════════════════════════════════════════
+
+function runTest() {
+  const text = document.getElementById('csvInput').value.trim();
+  if (!text) { alert('Paste CSV data first.'); return; }
+
+  const lineCount = Math.max(text.split('\n').length - 1, 0);
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.textContent = 'Processing ' + lineCount.toLocaleString() + ' rows…';
+
+  const worker = spawnWorker();
+
+  worker.onmessage = function(e) {
+    btn.disabled = false; btn.textContent = 'Run Test'; _worker = null;
+
+    if (!e.data.ok) { alert('Processing error: ' + e.data.error); return; }
+    const results = e.data.results;
+    if (!results.length) { alert('No valid rows found — check CSV format and column names.'); return; }
+
+    _sortCol = 'index'; _sortDir = 1; _currentPage = 0;
+    _canvasReady = false; // allow listener to attach to fresh canvas
+
+    document.getElementById('deletedBar').style.display = 'none';
+    document.getElementById('resultsSection').style.display = '';
+
+    renderSummary(results);
+    renderShapeBreakdown(results);
+    drawScatterPlot(results);
+    renderTable(results);
+    ensureCanvasTooltip();
+
+    document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  worker.onerror = function(err) {
+    btn.disabled = false; btn.textContent = 'Run Test'; _worker = null;
+    // Worker failed (e.g. no Worker support) — fall back to main-thread processing
+    try {
+      const raw = parseCSV(text);
+      if (!raw.length) { alert('No valid rows found — check CSV format.'); return; }
+      const results = processRows(raw);
+      _sortCol = 'index'; _sortDir = 1; _currentPage = 0; _canvasReady = false;
+      document.getElementById('deletedBar').style.display = 'none';
+      document.getElementById('resultsSection').style.display = '';
+      renderSummary(results); renderShapeBreakdown(results);
+      drawScatterPlot(results); renderTable(results); ensureCanvasTooltip();
+      document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch(e2) { alert('Error: ' + e2.message); }
+  };
+
+  worker.postMessage(text);
+}
+
+function clearAll() {
+  if (_worker) { _worker.terminate(); _worker = null; }
+  document.getElementById('csvInput').value = '';
+  document.getElementById('resultsSection').style.display = 'none';
+  document.getElementById('deletedBar').style.display = 'none';
+  _allResults = []; _currentResults = []; _canvasReady = false;
+  _showBase = true; _showMC = true; _legendHitAreas = [];
+  const btn = document.getElementById('runBtn');
+  btn.disabled = false; btn.textContent = 'Run Test';
+}
+
+document.getElementById('csvFileInput').addEventListener('change', function() {
+  const file = this.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) { document.getElementById('csvInput').value = e.target.result; };
+  reader.readAsText(file);
+  this.value = '';
+});
+
+// Redraw canvas on window resize (debounced)
+let _resizeTimer;
+window.addEventListener('resize', function() {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(function() {
+    if (_currentResults.length) drawScatterPlot(_currentResults);
+  }, 250);
+});
+</script>
+</body>
+</html>

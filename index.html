@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GemCalc">
-<link rel="manifest" href='data:application/manifest+json,{"name":"Gem Weight Calculator","short_name":"GemCalc","display":"standalone","background_color":"#F5F0E8","theme_color":"#1A1815"}'>
+<link rel="manifest" href='data:application/manifest+json,{"name":"Gem Weight Calculator","short_name":"GemCalc","display":"standalone v4","background_color":"#F5F0E8","theme_color":"#1A1815"}'>
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzFBMTgxNSIvPjxwYXRoIGQ9Ik05MCAzMEwxNTAgOTBMOTAgMTUwLTMwIDkwWiIgZmlsbD0iI0M0OTczQSIvPjwvc3ZnPg==">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzFBMTgxNSIvPjxwYXRoIGQ9Ik05MCAzMEwxNTAgOTBMOTAgMTUwLTMwIDkwWiIgZmlsbD0iI0M0OTczQSIvPjwvc3ZnPg==">
 <!--
@@ -493,20 +493,20 @@ function getBin(modType, value) {
 // dr  = typical depth ratio (depth ÷ shorter dimension) for estimating when depth is unknown
 // oec  = true → show OEC correction section
 const SHAPES = [
-  { id:'round',    label:'Round\nBrilliant',    sf:0.00180, kd:0.00610, dims:'round',  dr:0.61, cv:0.02 },
+  { id:'round',    label:'Round\nBrilliant',    sf:0.00180, kd:0.00612, dims:'round',  dr:0.61, cv:0.02 },
   { id:'oec',      label:'Old European\nCut',   sf:0.00180, kd:0.00600, dims:'round',  dr:0.68, oec:true, cv:0.08 },
   { id:'omc',      label:'Old Mine\nCut',       sf:0.00180, kd:0.00615, dims:'lwd',    dr:0.65, oec:true, cv:0.08 },
   { id:'rose',     label:'Rose Cut',            sf:0.00150, kd:0.00500, dims:'lwd',    dr:0.30, roseStyle:true, cv:0.08 },
-  { id:'oval',     label:'Oval',                sf:0.00200, kd:0.00600, dims:'lwd',    dr:0.62, cv:0.06 },
+  { id:'oval',     label:'Oval',                sf:0.00200, kd:0.00650, dims:'lwd',    dr:0.62, cv:0.06 },
   { id:'pear',     label:'Pear',                sf:0.00180, kd:0.00590, dims:'lwd',    dr:0.60, pearShoulder:true, cv:0.06 },
   { id:'marquise', label:'Marquise',            sf:0.00160, kd:0.00565, dims:'lwd',    dr:0.58, cv:0.06 },
   { id:'navette',  label:'Navette',             sf:0.00225, kd:null,    dims:'lwd',    dr:0.30, cv:0.06 },
   { id:'heart',    label:'Heart',               sf:0.00175, kd:0.00590, dims:'lwd',    dr:0.60, heartCleft:true, cv:0.06 },
-  { id:'cushion',  label:'Cushion',             sf:0.00220, kd:0.00760, dims:'lwd',    dr:0.63, cv:0.06 },
-  { id:'princess', label:'Princess',            sf:0.00230, kd:0.00820, dims:'lwd',    dr:0.71, cv:0.03 },
+  { id:'cushion',  label:'Cushion',             sf:0.00220, kd:0.00838, dims:'lwd',    dr:0.63, cv:0.06 },
+  { id:'princess', label:'Princess',            sf:0.00230, kd:0.00827, dims:'lwd',    dr:0.71, cv:0.03 },
   { id:'rectcut',  label:'Rectangular\nCut',    sf:0.00215, kd:0.00757, dims:'lwd',    dr:0.68, cv:0.04 },
-  { id:'asscher',  label:'Step Cut /\nAsscher', sf:0.00230, kd:0.00830, dims:'lwd',    dr:0.64, cv:0.04 },
-  { id:'emerald',  label:'Emerald Cut',         sf:0.00250, kd:0.00920, dims:'lwd',    dr:0.56, cv:0.04 },
+  { id:'asscher',  label:'Step Cut /\nAsscher', sf:0.00230, kd:0.00861, dims:'lwd',    dr:0.64, cv:0.04 },
+  { id:'emerald',  label:'Emerald Cut',         sf:0.00250, kd:0.00890, dims:'lwd',    dr:0.56, cv:0.04 },
   { id:'radiant',  label:'Radiant',             sf:0.00250, kd:0.00820, dims:'lwd',    dr:0.65, cv:0.05 },
   { id:'trillion', label:'Trillion',            sf:0.00170, kd:0.00510, dims:'lwd',    dr:0.44, cv:0.06 },
   { id:'baguette', label:'Baguette',            sf:0.00250, kd:0.00915, dims:'lwd',    dr:0.50, kdTapered:0.00880, dimsTapered:'tapbag', drTapered:0.48, cv:0.04 },

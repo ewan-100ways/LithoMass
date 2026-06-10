@@ -212,6 +212,90 @@ header {
 .result-btn { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.12); background: transparent; color: rgba(255,255,255,0.35); cursor: pointer; border-radius: 3px; padding: 5px 12px; transition: all 0.15s; }
 .result-btn:hover { border-color: var(--gold); color: var(--gold-light); }
 
+/* ── INPUT CLEAR BUTTON ── */
+.input-clear-wrap { position: relative; }
+.input-clear-wrap input { padding-right: 24px !important; }
+.clear-btn {
+  position: absolute; right: 2px; top: 50%; transform: translateY(-50%);
+  width: 18px; height: 18px; border: none; background: transparent;
+  color: var(--light); cursor: pointer; font-size: 12px; line-height: 1;
+  display: flex; align-items: center; justify-content: center; border-radius: 50%;
+  padding: 0; font-family: 'DM Sans', sans-serif;
+}
+.clear-btn:hover { color: var(--gold-deep); background: var(--gold-pale); }
+.input-clear-wrap input:placeholder-shown ~ .clear-btn { display: none; }
+
+/* ── CARD HEADER ROW (title + action link) ── */
+.card-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.card-title-row .card-title { margin-bottom: 0; }
+.card-link-btn {
+  background: transparent; border: none; color: var(--gold-deep);
+  font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.05em;
+  cursor: pointer; padding: 0; text-transform: uppercase;
+}
+.card-link-btn:hover { text-decoration: underline; }
+
+/* ── CALCULATE BUTTON ── */
+.calc-btn {
+  width: 100%; padding: 13px; border-radius: 6px; border: none;
+  background: var(--gold); color: var(--charcoal);
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer;
+  transition: background 0.12s;
+}
+.calc-btn:hover { background: var(--gold-light); }
+
+/* ── HISTORY TOGGLE (header) ── */
+.history-toggle-btn {
+  background: transparent; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.5);
+  font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+  border-radius: 4px; padding: 4px 8px; cursor: pointer; transition: all 0.12s;
+}
+.history-toggle-btn:hover { border-color: var(--gold); color: var(--gold-light); }
+
+/* ── LAYOUT WITH HISTORY SIDEBAR ── */
+.layout { position: relative; }
+.history-panel {
+  width: 280px;
+  position: absolute; top: 24px; left: calc(50% + 360px);
+  background: var(--warm-white); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px;
+  max-height: calc(100vh - 48px); display: flex; flex-direction: column;
+}
+.history-panel.collapsed { display: none; }
+.history-list { overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.history-item {
+  border: 1px solid var(--border); border-radius: 6px; padding: 8px 26px 8px 10px;
+  cursor: pointer; transition: border-color 0.12s, background 0.12s;
+  position: relative;
+}
+.history-item:hover { border-color: var(--gold); background: var(--gold-pale); }
+.history-item-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.history-item-shape { font-size: 12px; font-weight: 500; color: var(--charcoal); display: flex; align-items: center; gap: 6px; }
+.history-item-icon { width: 20px; height: 15px; color: var(--mid); flex-shrink: 0; }
+.history-item-icon svg { width: 100%; height: 100%; }
+.history-item-result { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--gold-deep); font-weight: 500; white-space: nowrap; }
+.history-item-detail { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--mid); margin-top: 4px; }
+.history-empty { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--light); text-align: center; padding: 20px 0; }
+.history-total {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--mid);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.history-total .history-total-val { color: var(--gold-deep); font-size: 13px; font-weight: 500; letter-spacing: normal; text-transform: none; }
+.history-del {
+  position: absolute; top: 6px; right: 6px; width: 18px; height: 18px;
+  border: none; background: transparent; color: var(--light); cursor: pointer;
+  font-size: 11px; line-height: 1; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; padding: 0;
+}
+.history-del:hover { color: var(--gold-deep); background: var(--gold-pale); }
+
+@media (max-width: 1320px) {
+  .history-panel, .history-toggle-btn { display: none; }
+}
+
 @media (max-width: 500px) {
   .field input, .field select, .dim-field input {
     padding: 10px 10px;
@@ -246,9 +330,13 @@ header {
       <span class="logo-sub">LithoMass</span>
     </div>
   </div>
-  <span class="header-tag">Standalone</span>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <button class="history-toggle-btn" id="historyToggleBtn" onclick="toggleHistoryPanel()">History</button>
+    <span class="header-tag">Standalone</span>
+  </div>
 </header>
 
+<div class="layout">
 <div class="page">
 
   <div class="page-title">
@@ -271,24 +359,31 @@ header {
     <div class="field-row">
       <div class="field">
         <label>Stone type</label>
-        <div class="ss-wrap" id="ssWrap">
+        <div class="ss-wrap input-clear-wrap" id="ssWrap">
           <input type="text" id="stoneInput" class="field" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:5px;background:#fff;font-size:13px;outline:none;width:100%"
             placeholder="Search stone…" autocomplete="off"
             oninput="ssFilter()" onfocus="ssOpen()" onblur="ssBlur()" onkeydown="ssKey(event)">
+          <button type="button" class="clear-btn" aria-label="Clear" onclick="clearStoneInput(this.previousElementSibling)">&#10005;</button>
           <div class="ss-drop" id="ssDrop" style="display:none"></div>
         </div>
       </div>
       <div class="field narrow">
         <label>Sp. gravity</label>
-        <input type="number" id="sgInput" min="0.5" max="9" step="0.01" placeholder="—"
-          oninput="onSgChange(this.value)">
+        <div class="input-clear-wrap">
+          <input type="text" inputmode="decimal" id="sgInput" placeholder="—"
+            oninput="onSgChange(this.value)" onkeydown="sgKeydown(event)">
+          <button type="button" class="clear-btn" aria-label="Clear" onclick="clearSg(this.previousElementSibling)">&#10005;</button>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Dimensions -->
   <div class="card">
-    <div class="card-title">Dimensions</div>
+    <div class="card-title-row">
+      <div class="card-title">Dimensions</div>
+      <button class="card-link-btn" onclick="clearDims()">Clear</button>
+    </div>
     <div id="dimFields"></div>
   </div>
 
@@ -299,10 +394,10 @@ header {
     <div class="corr-section" id="roseSection" style="display:none">
       <span class="corr-label">Rose cut style — count the triangular crown facets visible from above.</span>
       <div class="corr-btns" id="roseStyleBtns">
-        <button class="corr-btn" onclick="pickCorr('roseStyle',this,0.67)">3-facet — very flat</button>
-        <button class="corr-btn" onclick="pickCorr('roseStyle',this,0.87)">6-facet — six-point</button>
-        <button class="corr-btn active" onclick="pickCorr('roseStyle',this,1.00)">12-facet — Antwerp rose (standard)</button>
-        <button class="corr-btn" onclick="pickCorr('roseStyle',this,1.20)">24-facet — Dutch rose, tallest</button>
+        <button class="corr-btn" data-val="0.67" onclick="pickCorr('roseStyle',this,0.67)">3-facet — very flat</button>
+        <button class="corr-btn" data-val="0.87" onclick="pickCorr('roseStyle',this,0.87)">6-facet — six-point</button>
+        <button class="corr-btn active" data-val="1.00" onclick="pickCorr('roseStyle',this,1.00)">12-facet — Antwerp rose (standard)</button>
+        <button class="corr-btn" data-val="1.20" onclick="pickCorr('roseStyle',this,1.20)">24-facet — Dutch rose, tallest</button>
       </div>
     </div>
     <div class="divider" id="roseDiv" style="display:none"></div>
@@ -310,9 +405,9 @@ header {
     <div class="corr-section" id="heartSection" style="display:none">
       <span class="corr-label">Heart cleft depth — measure the V-notch at the top as a fraction of total length (point-to-cleft length).</span>
       <div class="corr-btns" id="heartCleftBtns">
-        <button class="corr-btn" onclick="pickCorr('heartCleft',this,1.05)">Shallow — cleft &lt; 20% of length</button>
-        <button class="corr-btn active" onclick="pickCorr('heartCleft',this,1.00)">Typical — cleft 20–30%</button>
-        <button class="corr-btn" onclick="pickCorr('heartCleft',this,0.92)">Deep — cleft &gt; 30% of length</button>
+        <button class="corr-btn" data-val="1.05" onclick="pickCorr('heartCleft',this,1.05)">Shallow — cleft &lt; 20% of length</button>
+        <button class="corr-btn active" data-val="1.00" onclick="pickCorr('heartCleft',this,1.00)">Typical — cleft 20–30%</button>
+        <button class="corr-btn" data-val="0.92" onclick="pickCorr('heartCleft',this,0.92)">Deep — cleft &gt; 30% of length</button>
       </div>
     </div>
     <div class="divider" id="heartDiv" style="display:none"></div>
@@ -320,9 +415,9 @@ header {
     <div class="corr-section" id="pearSection" style="display:none">
       <span class="corr-label">Pear shoulder — where the widest point sits along the length. Find the widest line and see how far below the round end it sits. Higher (closer to the round end) = stubby & heavier; lower (closer to the point) = elongated & lighter.</span>
       <div class="corr-btns" id="pearShoulderBtns">
-        <button class="corr-btn" onclick="pickCorr('pearShoulder',this,1.04)">High shoulder — stubby pear</button>
-        <button class="corr-btn active" onclick="pickCorr('pearShoulder',this,1.00)">Standard — belly ~⅓ down from round end</button>
-        <button class="corr-btn" onclick="pickCorr('pearShoulder',this,0.96)">Low shoulder — elongated pear</button>
+        <button class="corr-btn" data-val="1.04" onclick="pickCorr('pearShoulder',this,1.04)">High shoulder — stubby pear</button>
+        <button class="corr-btn active" data-val="1.00" onclick="pickCorr('pearShoulder',this,1.00)">Standard — belly ~⅓ down from round end</button>
+        <button class="corr-btn" data-val="0.96" onclick="pickCorr('pearShoulder',this,0.96)">Low shoulder — elongated pear</button>
       </div>
     </div>
     <div class="divider" id="pearDiv" style="display:none"></div>
@@ -330,11 +425,11 @@ header {
     <div class="corr-section">
       <span class="corr-label">Girdle thickness — The outer edge or "belt" of the stone. Look at the stone perfectly from the side. 'Standard' is the mathematical baseline. Only select a thicker option if the edge looks visibly prominent or chunky.</span>
       <div class="corr-btns" id="girdleBtns">
-        <button class="corr-btn active" onclick="pickCorr('girdle',this,1.00)">Standard</button>
-        <button class="corr-btn" onclick="pickCorr('girdle',this,1.02)">Slightly Thick</button>
-        <button class="corr-btn" onclick="pickCorr('girdle',this,1.04)">Thick</button>
-        <button class="corr-btn" onclick="pickCorr('girdle',this,1.08)">Very Thick</button>
-        <button class="corr-btn" onclick="pickCorr('girdle',this,1.10)">Extremely Thick</button>
+        <button class="corr-btn active" data-val="1.00" onclick="pickCorr('girdle',this,1.00)">Standard</button>
+        <button class="corr-btn" data-val="1.02" onclick="pickCorr('girdle',this,1.02)">Slightly Thick</button>
+        <button class="corr-btn" data-val="1.04" onclick="pickCorr('girdle',this,1.04)">Thick</button>
+        <button class="corr-btn" data-val="1.08" onclick="pickCorr('girdle',this,1.08)">Very Thick</button>
+        <button class="corr-btn" data-val="1.10" onclick="pickCorr('girdle',this,1.10)">Extremely Thick</button>
       </div>
     </div>
 
@@ -343,11 +438,11 @@ header {
     <div class="corr-section">
       <span class="corr-label">Stone bulginess — The shape of the stone's bottom half. Look at the stone from the side. If the lines drop perfectly straight to the bottom point, select 'Standard'. If the bottom looks gently curved or heavily swollen, select a stronger bulge to account for the extra mass.</span>
       <div class="corr-btns" id="bulgeBtns">
-        <button class="corr-btn active" onclick="pickCorr('bulge',this,1.00)">Standard</button>
-        <button class="corr-btn" onclick="pickCorr('bulge',this,1.03)">Slight</button>
-        <button class="corr-btn" onclick="pickCorr('bulge',this,1.06)">Moderate</button>
-        <button class="corr-btn" onclick="pickCorr('bulge',this,1.10)">Strong</button>
-        <button class="corr-btn" onclick="pickCorr('bulge',this,1.15)">Very Strong</button>
+        <button class="corr-btn active" data-val="1.00" onclick="pickCorr('bulge',this,1.00)">Standard</button>
+        <button class="corr-btn" data-val="1.03" onclick="pickCorr('bulge',this,1.03)">Slight</button>
+        <button class="corr-btn" data-val="1.06" onclick="pickCorr('bulge',this,1.06)">Moderate</button>
+        <button class="corr-btn" data-val="1.10" onclick="pickCorr('bulge',this,1.10)">Strong</button>
+        <button class="corr-btn" data-val="1.15" onclick="pickCorr('bulge',this,1.15)">Very Strong</button>
       </div>
     </div>
 
@@ -355,11 +450,11 @@ header {
     <div class="corr-section" id="oecSection" style="display:none">
       <span class="corr-label">Old-cut proportions correction — OEC &amp; OMC have a higher crown, larger open culet, and smaller table than modern cuts, adding mass not captured by L×W×D alone</span>
       <div class="corr-btns" id="oecBtns">
-        <button class="corr-btn active" onclick="pickCorr('oec',this,1.00)">×1.00 — low crown, modern-ish</button>
-        <button class="corr-btn" onclick="pickCorr('oec',this,1.02)">×1.02 — slightly high crown</button>
-        <button class="corr-btn" onclick="pickCorr('oec',this,1.04)">×1.04 — high crown, typical OEC/OMC</button>
-        <button class="corr-btn" onclick="pickCorr('oec',this,1.06)">×1.06 — very high crown, small table</button>
-        <button class="corr-btn" onclick="pickCorr('oec',this,1.08)">×1.08 — extreme crown, large open culet</button>
+        <button class="corr-btn active" data-val="1.00" onclick="pickCorr('oec',this,1.00)">×1.00 — low crown, modern-ish</button>
+        <button class="corr-btn" data-val="1.02" onclick="pickCorr('oec',this,1.02)">×1.02 — slightly high crown</button>
+        <button class="corr-btn" data-val="1.04" onclick="pickCorr('oec',this,1.04)">×1.04 — high crown, typical OEC/OMC</button>
+        <button class="corr-btn" data-val="1.06" onclick="pickCorr('oec',this,1.06)">×1.06 — very high crown, small table</button>
+        <button class="corr-btn" data-val="1.08" onclick="pickCorr('oec',this,1.08)">×1.08 — extreme crown, large open culet</button>
       </div>
     </div>
 
@@ -371,12 +466,26 @@ header {
     <button class="corr-btn active" id="modeMCBtn" onclick="setMode('mc')">Statistical (Monte Carlo)</button>
   </div>
 
+  <!-- Calculate -->
+  <button class="calc-btn" id="calculateBtn" onclick="doCalculate()">Calculate</button>
+
   <!-- Result -->
   <div class="result-card" id="resultCard">
     <div class="result-empty">enter dimensions to calculate</div>
   </div>
 
 </div><!-- /page -->
+
+<aside class="history-panel" id="historyPanel">
+  <div class="card-title-row">
+    <div class="card-title">History</div>
+    <button class="card-link-btn" onclick="clearHistory()">Clear all</button>
+  </div>
+  <div class="history-list" id="historyList"></div>
+  <div class="history-total" id="historyTotal"></div>
+</aside>
+
+</div><!-- /layout -->
 
 <footer class="site-footer">
   <div class="footer-divider"></div>
@@ -647,7 +756,67 @@ const S = {
   pearShoulder: 1.00,   // pear-only
   mode: 'mc',           // 'quick' (deterministic ±5%) | 'mc' (Monte Carlo CI)
   shapeMenuExpanded: false,
+  history: [],
 };
+
+let _lastResult = null; // { val, mc } from the most recent successful calculate()
+
+// ════════════════════════════════════════════════════════════════
+// PERSISTENCE (per-browser localStorage — never shared between visitors)
+// ════════════════════════════════════════════════════════════════
+const STATE_KEY = 'lithomass_state_v1';
+const HISTORY_KEY = 'lithomass_history_v1';
+const HISTORY_COLLAPSED_KEY = 'lithomass_history_collapsed_v1';
+const MAX_HISTORY = 30;
+
+function persistState() {
+  try {
+    const toSave = {
+      shape: S.shape, stoneName: S.stoneName, sg: S.sg, dims: S.dims,
+      tapered: S.tapered, girdle: S.girdle, bulge: S.bulge, oec: S.oec,
+      roseStyle: S.roseStyle, heartCleft: S.heartCleft, pearShoulder: S.pearShoulder,
+      mode: S.mode,
+      stoneInputVal: document.getElementById('stoneInput').value,
+      sgInputVal: document.getElementById('sgInput').value,
+    };
+    localStorage.setItem(STATE_KEY, JSON.stringify(toSave));
+  } catch (e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    Object.assign(S, saved);
+    document.getElementById('stoneInput').value = saved.stoneInputVal || '';
+    document.getElementById('sgInput').value = saved.sgInputVal || '';
+    document.getElementById('modeQuickBtn').classList.toggle('active', S.mode === 'quick');
+    document.getElementById('modeMCBtn').classList.toggle('active', S.mode === 'mc');
+  } catch (e) {}
+}
+
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    S.history = raw ? JSON.parse(raw) : [];
+  } catch (e) { S.history = []; }
+  try {
+    if (localStorage.getItem(HISTORY_COLLAPSED_KEY) === '1') {
+      document.getElementById('historyPanel').classList.add('collapsed');
+    }
+  } catch (e) {}
+}
+
+function saveHistory() {
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(S.history)); } catch (e) {}
+}
+
+function toggleHistoryPanel() {
+  const panel = document.getElementById('historyPanel');
+  panel.classList.toggle('collapsed');
+  try { localStorage.setItem(HISTORY_COLLAPSED_KEY, panel.classList.contains('collapsed') ? '1' : '0'); } catch (e) {}
+}
 
 // Presidium caliper σ — 1σ measurement uncertainty per repeated-measurement test
 const PRESIDIUM_SIGMA_MM = 0.01;
@@ -661,8 +830,14 @@ const MC_N = 10000;
 // ════════════════════════════════════════════════════════════════
 
 function init() {
+  loadState();
+  loadHistory();
   renderShapeGrid();
   renderDimFields();
+  updateShapeModifiers();
+  restoreCorrButtons();
+  renderHistory();
+  markStale();
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -720,7 +895,8 @@ function selectShape(id) {
   renderShapeGrid();
   renderDimFields();
   updateShapeModifiers();
-  calculate();
+  markStale();
+  persistState();
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -728,6 +904,15 @@ function selectShape(id) {
 // ════════════════════════════════════════════════════════════════
 
 function v(key) { return S.dims[key] || ''; }
+
+// Builds a dim-field block: label + text input (decimal inputmode) + inline clear button
+function dimField(key, label, placeholder) {
+  return `<div class="dim-field"><label>${label}</label>
+    <div class="input-clear-wrap">
+      <input type="text" inputmode="decimal" placeholder="${placeholder}" value="${v(key)}" oninput="setDim('${key}',this.value)" onkeydown="fieldKeydown(event,'${key}')">
+      <button type="button" class="clear-btn" aria-label="Clear" onclick="clearDim('${key}',this)">&#10005;</button>
+    </div></div>`;
+}
 
 function renderDimFields() {
   const sh = SHAPES.find(s => s.id === S.shape);
@@ -756,38 +941,28 @@ function renderDimFields() {
   if (effDims === 'round') {
     container.innerHTML = prefix + `
       <div class="dim-grid g3">
-        <div class="dim-field"><label>Diameter 1 (mm)</label>
-          <input type="number" min="0" step="0.01" placeholder="—" value="${v('d1')}" oninput="setDim('d1',this.value)"></div>
-        <div class="dim-field"><label>Diameter 2 (mm)</label>
-          <input type="number" min="0" step="0.01" placeholder="—" value="${v('d2')}" oninput="setDim('d2',this.value)"></div>
-        <div class="dim-field"><label>${depthLbl}</label>
-          <input type="number" min="0" step="0.01" placeholder="estimate" value="${v('depth')}" oninput="setDim('depth',this.value)"></div>
+        ${dimField('d1', 'Diameter 1 (mm)', '—')}
+        ${dimField('d2', 'Diameter 2 (mm)', '—')}
+        ${dimField('depth', depthLbl, 'estimate')}
       </div>
       <div class="dim-note">Uses average of both diameters · depth estimated at ${Math.round(effDr*100)}% of diameter if blank</div>`;
 
   } else if (effDims === 'lwd') {
     container.innerHTML = prefix + `
       <div class="dim-grid g3">
-        <div class="dim-field"><label>Length (mm)</label>
-          <input type="number" min="0" step="0.01" placeholder="—" value="${v('l')}" oninput="setDim('l',this.value)"></div>
-        <div class="dim-field"><label>Width (mm)</label>
-          <input type="number" min="0" step="0.01" placeholder="—" value="${v('w')}" oninput="setDim('w',this.value)"></div>
-        <div class="dim-field"><label>${depthLbl}</label>
-          <input type="number" min="0" step="0.01" placeholder="estimate" value="${v('depth')}" oninput="setDim('depth',this.value)"></div>
+        ${dimField('l', 'Length (mm)', '—')}
+        ${dimField('w', 'Width (mm)', '—')}
+        ${dimField('depth', depthLbl, 'estimate')}
       </div>
       <div class="dim-note">Depth estimated at ${Math.round(effDr*100)}% of width if blank — widens accuracy range to ±20%</div>`;
 
   } else if (effDims === 'tapbag') {
     container.innerHTML = prefix + `
       <div class="dim-grid g4">
-        <div class="dim-field"><label>Length (mm)</label>
-          <input type="number" min="0" step="0.01" placeholder="—" value="${v('l')}" oninput="setDim('l',this.value)"></div>
-        <div class="dim-field"><label>Wide end (mm)</label>
-          <input type="number" min="0" step="0.01" placeholder="—" value="${v('w1')}" oninput="setDim('w1',this.value)"></div>
-        <div class="dim-field"><label>Narrow end (mm)</label>
-          <input type="number" min="0" step="0.01" placeholder="—" value="${v('w2')}" oninput="setDim('w2',this.value)"></div>
-        <div class="dim-field"><label>${depthLbl}</label>
-          <input type="number" min="0" step="0.01" placeholder="estimate" value="${v('depth')}" oninput="setDim('depth',this.value)"></div>
+        ${dimField('l', 'Length (mm)', '—')}
+        ${dimField('w1', 'Wide end (mm)', '—')}
+        ${dimField('w2', 'Narrow end (mm)', '—')}
+        ${dimField('depth', depthLbl, 'estimate')}
       </div>
       <div class="dim-note">Uses average width: (wide + narrow) ÷ 2 · depth estimated at ${Math.round(effDr*100)}% if blank</div>`;
   }
@@ -796,7 +971,50 @@ function renderDimFields() {
 function setDim(key, raw) {
   const v = parseFloat(raw);
   S.dims[key] = (isNaN(v) || v < 0) ? 0 : v;
-  calculate();
+  markStale();
+  persistState();
+}
+
+function clearDim(key, btn) {
+  const input = btn.previousElementSibling;
+  S.dims[key] = 0;
+  input.value = '';
+  input.focus();
+  markStale();
+  persistState();
+}
+
+function clearDims() {
+  S.dims = {};
+  renderDimFields();
+  markStale();
+  persistState();
+}
+
+// ════════════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS — Esc clears the focused field, Enter advances
+// ════════════════════════════════════════════════════════════════
+
+function focusNextField(current) {
+  const focusables = Array.from(document.querySelectorAll('#stoneInput, #sgInput, #dimFields input'));
+  const idx = focusables.indexOf(current);
+  if (idx >= 0 && idx < focusables.length - 1) {
+    focusables[idx + 1].focus();
+  } else {
+    document.getElementById('calculateBtn').focus();
+  }
+}
+
+function fieldKeydown(e, key) {
+  if (e.key === 'Escape') {
+    e.target.value = '';
+    S.dims[key] = 0;
+    markStale();
+    persistState();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    focusNextField(e.target);
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -854,31 +1072,75 @@ function ssPick(idx) {
   document.getElementById('sgInput').value = s.sg.toFixed(2);
   document.getElementById('ssDrop').style.display = 'none';
   _ssIsOpen = false;
-  calculate();
+  markStale();
+  persistState();
 }
 
 function ssKey(e) {
-  if (!_ssIsOpen) return;
-  if (e.key === 'ArrowDown') {
-    _ssFocus = Math.min(_ssFocus + 1, _ssItems.length - 1);
-    _renderDrop(_ssItems);
-    e.preventDefault();
-  } else if (e.key === 'ArrowUp') {
-    _ssFocus = Math.max(_ssFocus - 1, 0);
-    _renderDrop(_ssItems);
-    e.preventDefault();
-  } else if (e.key === 'Enter') {
-    if (_ssFocus >= 0) ssPick(_ssFocus);
-    e.preventDefault();
-  } else if (e.key === 'Escape') {
-    document.getElementById('ssDrop').style.display = 'none';
-    _ssIsOpen = false;
+  if (_ssIsOpen) {
+    if (e.key === 'ArrowDown') {
+      _ssFocus = Math.min(_ssFocus + 1, _ssItems.length - 1);
+      _renderDrop(_ssItems);
+      e.preventDefault();
+    } else if (e.key === 'ArrowUp') {
+      _ssFocus = Math.max(_ssFocus - 1, 0);
+      _renderDrop(_ssItems);
+      e.preventDefault();
+    } else if (e.key === 'Enter') {
+      if (_ssFocus >= 0) {
+        ssPick(_ssFocus);
+      } else {
+        document.getElementById('ssDrop').style.display = 'none';
+        _ssIsOpen = false;
+        focusNextField(e.target);
+      }
+      e.preventDefault();
+    } else if (e.key === 'Escape') {
+      document.getElementById('ssDrop').style.display = 'none';
+      _ssIsOpen = false;
+    }
+    return;
   }
+  if (e.key === 'Escape') {
+    clearStoneInput(e.target);
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    focusNextField(e.target);
+  }
+}
+
+function clearStoneInput(input) {
+  S.stoneName = '';
+  S.sg = null;
+  input.value = '';
+  document.getElementById('sgInput').value = '';
+  input.focus();
+  markStale();
+  persistState();
 }
 
 function onSgChange(val) {
   const v = parseFloat(val);
-  if (!isNaN(v) && v > 0) { S.sg = v; calculate(); }
+  S.sg = (!isNaN(v) && v > 0) ? v : null;
+  markStale();
+  persistState();
+}
+
+function sgKeydown(e) {
+  if (e.key === 'Escape') {
+    clearSg(e.target);
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    focusNextField(e.target);
+  }
+}
+
+function clearSg(input) {
+  S.sg = null;
+  input.value = '';
+  input.focus();
+  markStale();
+  persistState();
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -893,7 +1155,22 @@ function pickCorr(type, btn, val) {
   document.querySelectorAll(`#${map[type]} .corr-btn`).forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   S[type] = val;
-  calculate();
+  markStale();
+  persistState();
+}
+
+// Sets the .active class on each corrections button group to match S — used
+// after restoring a history entry or loading persisted state on page load.
+function restoreCorrButtons() {
+  const map = {
+    girdle:'girdleBtns', bulge:'bulgeBtns', oec:'oecBtns',
+    roseStyle:'roseStyleBtns', heartCleft:'heartCleftBtns', pearShoulder:'pearShoulderBtns',
+  };
+  Object.keys(map).forEach(type => {
+    document.querySelectorAll(`#${map[type]} .corr-btn`).forEach(b => {
+      b.classList.toggle('active', Math.abs(parseFloat(b.dataset.val) - S[type]) < 1e-6);
+    });
+  });
 }
 
 // Baguette regular ↔ tapered. Moves width values across the dim-layout change
@@ -913,7 +1190,8 @@ function setTapered(val) {
   }
   S.tapered = val;
   renderDimFields();
-  calculate();
+  markStale();
+  persistState();
 }
 
 // Quick (deterministic) ↔ Statistical (Monte Carlo) output toggle
@@ -922,7 +1200,8 @@ function setMode(mode) {
   S.mode = mode;
   document.getElementById('modeQuickBtn').classList.toggle('active', mode === 'quick');
   document.getElementById('modeMCBtn').classList.toggle('active', mode === 'mc');
-  calculate();
+  markStale();
+  persistState();
 }
 
 function updateShapeModifiers() {
@@ -1025,6 +1304,31 @@ function getDimsLWD() {
   return null;
 }
 
+// Calculator only computes on a button press (Calculate). Any input change
+// before that just marks the previous result stale via markStale().
+function markStale() {
+  const card = document.getElementById('resultCard');
+  card.dataset.hasResult = '0';
+  const dims = getDimsLWD();
+  const sg = S.sg || parseFloat(document.getElementById('sgInput').value) || 0;
+  if (!dims) {
+    card.innerHTML = '<div class="result-empty">enter dimensions to calculate</div>';
+  } else if (!sg) {
+    card.innerHTML = '<div class="result-empty" style="color:var(--gold-deep);padding:20px;">Please select a Stone Type or enter a Specific Gravity (SG) to calculate weight.</div>';
+  } else {
+    card.innerHTML = '<div class="result-empty">Press Calculate to see the result</div>';
+  }
+}
+
+// Triggered by the Calculate button — computes the result and, on success, logs a history entry.
+function doCalculate() {
+  calculate();
+  const card = document.getElementById('resultCard');
+  if (card.dataset.hasResult === '1') {
+    addHistoryEntry();
+  }
+}
+
 function calculate() {
   const card = document.getElementById('resultCard');
   const sh = SHAPES.find(s => s.id === S.shape);
@@ -1033,12 +1337,14 @@ function calculate() {
 
   if (!dims) {
     card.innerHTML = '<div class="result-empty">enter dimensions to calculate</div>';
+    card.dataset.hasResult = '0';
     return;
   }
 
   // Feature: Clarify missing SG error
   if (!sg) {
     card.innerHTML = '<div class="result-empty" style="color:var(--gold-deep);padding:20px;">Please select a Stone Type or enter a Specific Gravity (SG) to calculate weight.</div>';
+    card.dataset.hasResult = '0';
     return;
   }
 
@@ -1119,6 +1425,8 @@ function renderDeterministicResult(card, sh, dims, sg, isDiamond, effKd, mcFallb
       <button class="result-btn" onclick="copyResult('${ctStr}')">Copy weight</button>
       <button class="result-btn" onclick="resetAll()">Reset</button>
     </div>`;
+  card.dataset.hasResult = '1';
+  _lastResult = { val: ctStr, mc: false };
 }
 
 // ─── Monte Carlo engine ───
@@ -1242,9 +1550,8 @@ function renderMCResult(card, sh, dims, sg, isDiamond, effKd, mc) {
 
   card.innerHTML = `
     <div class="result-val">${medianStr}</div>
-    <div class="result-unit">carats — median</div>
+    <div class="result-unit">50% CI: ${fmt(mc.p25)} – ${fmt(mc.p75)} ct</div>
     <div class="result-range">95% CI: ${fmt(mc.p025)} – ${fmt(mc.p975)} ct</div>
-    <div class="result-range" style="opacity:0.8;">50% CI: ${fmt(mc.p25)} – ${fmt(mc.p75)} ct</div>
     ${extremeNote}
     ${roundNote}
     <div class="result-formula">${lines.join('<br>')}<br><br><span style="opacity:0.6;">n = ${MC_N.toLocaleString()} iterations · This statistical model integrates measurement error, mineral density ranges, and shape-specific geometric variance to calculate confidence intervals.</span></div>
@@ -1252,6 +1559,8 @@ function renderMCResult(card, sh, dims, sg, isDiamond, effKd, mc) {
       <button class="result-btn" onclick="copyResult('${medianStr}')">Copy median</button>
       <button class="result-btn" onclick="resetAll()">Reset</button>
     </div>`;
+  card.dataset.hasResult = '1';
+  _lastResult = { val: medianStr, mc: true };
 }
 
 function copyResult(val) {
@@ -1283,7 +1592,109 @@ function resetAll() {
     btns.forEach((b, i) => b.classList.toggle('active', i === defaultIdx[id]));
   });
   renderDimFields();
-  document.getElementById('resultCard').innerHTML = '<div class="result-empty">enter dimensions to calculate</div>';
+  markStale();
+  persistState();
+}
+
+// ════════════════════════════════════════════════════════════════
+// HISTORY (desktop sidebar) — auto-logged on Calculate, click to restore
+// ════════════════════════════════════════════════════════════════
+
+function addHistoryEntry() {
+  const dims = getDimsLWD();
+  if (!dims || !_lastResult) return;
+  const entry = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    shape: S.shape,
+    stoneName: S.stoneName,
+    sg: S.sg,
+    sgInputVal: document.getElementById('sgInput').value,
+    dims: Object.assign({}, S.dims),
+    tapered: S.tapered,
+    girdle: S.girdle, bulge: S.bulge, oec: S.oec,
+    roseStyle: S.roseStyle, heartCleft: S.heartCleft, pearShoulder: S.pearShoulder,
+    mode: S.mode,
+    note: dims.note,
+    result: _lastResult.val,
+    mc: _lastResult.mc,
+    stoneLabel: S.stoneName || (S.sg ? `SG ${S.sg.toFixed(2)}` : ''),
+  };
+  S.history.unshift(entry);
+  if (S.history.length > MAX_HISTORY) S.history = S.history.slice(0, MAX_HISTORY);
+  saveHistory();
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  const total = document.getElementById('historyTotal');
+  if (!list) return;
+  if (!S.history.length) {
+    list.innerHTML = '<div class="history-empty">No calculations yet</div>';
+    if (total) { total.innerHTML = ''; total.style.display = 'none'; }
+    return;
+  }
+  list.innerHTML = S.history.map(h => {
+    const sh = SHAPES.find(s => s.id === h.shape);
+    const resultLabel = h.mc ? `${h.result} ct (med.)` : `${h.result} ct`;
+    return `<div class="history-item" onclick="restoreHistoryEntry('${h.id}')">
+      <button class="history-del" aria-label="Delete entry" onclick="event.stopPropagation();deleteHistoryEntry('${h.id}')">&#10005;</button>
+      <div class="history-item-top">
+        <div class="history-item-shape"><span class="history-item-icon">${ICONS[h.shape] || ''}</span>${sh ? sh.label.replace(/\n/g, ' ') : h.shape}</div>
+        <div class="history-item-result">${resultLabel}</div>
+      </div>
+      <div class="history-item-detail">${h.note}${h.stoneLabel ? ' · ' + h.stoneLabel : ''}</div>
+    </div>`;
+  }).join('');
+
+  if (total) {
+    const sum = S.history.reduce((acc, h) => acc + parseFloat(h.result), 0);
+    const sumStr = sum < 0.10 ? sum.toFixed(3) : sum.toFixed(2);
+    total.style.display = 'flex';
+    total.innerHTML = `<span>Total</span><span class="history-total-val">${sumStr} ct</span>`;
+  }
+}
+
+function restoreHistoryEntry(id) {
+  const entry = S.history.find(h => h.id === id);
+  if (!entry) return;
+
+  S.shape = entry.shape;
+  S.stoneName = entry.stoneName;
+  S.sg = entry.sg;
+  S.dims = Object.assign({}, entry.dims);
+  S.tapered = entry.tapered;
+  S.girdle = entry.girdle;
+  S.bulge = entry.bulge;
+  S.oec = entry.oec;
+  S.roseStyle = entry.roseStyle;
+  S.heartCleft = entry.heartCleft;
+  S.pearShoulder = entry.pearShoulder;
+  S.mode = entry.mode;
+
+  renderShapeGrid();
+  renderDimFields();
+  updateShapeModifiers();
+  restoreCorrButtons();
+  document.getElementById('stoneInput').value = entry.stoneName || '';
+  document.getElementById('sgInput').value = entry.sgInputVal || (entry.sg ? entry.sg.toFixed(2) : '');
+  document.getElementById('modeQuickBtn').classList.toggle('active', S.mode === 'quick');
+  document.getElementById('modeMCBtn').classList.toggle('active', S.mode === 'mc');
+
+  calculate(); // recompute for display only — doesn't add a new history entry
+  persistState();
+}
+
+function deleteHistoryEntry(id) {
+  S.history = S.history.filter(h => h.id !== id);
+  saveHistory();
+  renderHistory();
+}
+
+function clearHistory() {
+  S.history = [];
+  saveHistory();
+  renderHistory();
 }
 
 init();

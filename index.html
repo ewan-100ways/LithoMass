@@ -14,8 +14,7 @@
   ============================================================================
   LithoMass — standalone gem weight calculator
   ============================================================================
-  Single-file deliverable. Just double-click to open in a browser. No server,
-  no install, no other files needed.
+  Single-file deliverable. Just double-click to open in a browser.
 
   Estimates carat weight from physical measurements using the LithoMass
   formula set:
@@ -81,6 +80,20 @@ header {
 /* ── LAYOUT ── */
 .page { max-width: 680px; margin: 0 auto; padding: 24px 16px 48px; display: flex; flex-direction: column; gap: 14px; }
 
+/* ── FOOTER ── */
+.site-footer { max-width: 680px; margin: 0 auto; padding: 0 16px 32px; }
+.footer-divider { height: 1px; background: var(--border); margin-bottom: 16px; }
+.footer-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.footer-logo-lockup { display: flex; align-items: center; gap: 10px; }
+.footer-logo-diamond { width: 14px; height: 14px; background: var(--gold); clip-path: polygon(50% 0%,100% 50%,50% 100%,0% 50%); }
+.footer-logo-text { display: flex; flex-direction: column; line-height: 1; }
+.footer-logo-main { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-weight: 500; color: var(--gold-deep); letter-spacing: 0.04em; }
+.footer-logo-sub { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--light); margin-top: 1px; }
+.footer-contact { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.05em; color: var(--light); }
+.footer-contact a { color: var(--gold-deep); text-decoration: none; }
+.footer-contact a:hover { text-decoration: underline; }
+.footer-credit { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.05em; color: var(--light); text-align: center; margin-top: 14px; }
+
 /* ── PAGE TITLE ── */
 .page-title { text-align: center; padding: 8px 0 4px; }
 .page-title h1 { font-family: 'Cormorant Garamond', serif; font-size: 1.9rem; font-weight: 400; color: var(--charcoal); letter-spacing: 0.02em; }
@@ -106,6 +119,20 @@ header {
 }
 .shape-btn:hover { border-color: var(--gold); background: var(--gold-pale); }
 .shape-btn.active { border-color: var(--gold); background: var(--gold-pale); color: var(--charcoal); font-weight: 500; }
+.shape-toggle-wrap { margin-top: 12px; text-align: right; }
+.shape-toggle-btn {
+  padding: 8px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--mid);
+  font-size: 11px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+.shape-toggle-btn:hover { border-color: var(--gold); background: var(--gold-pale); }
+.shape-toggle-btn.active { border-color: var(--gold); background: var(--gold-pale); color: var(--charcoal); font-weight: 500; }
 .shape-icon { width: 36px; height: 26px; display: flex; align-items: center; justify-content: center; }
 .shape-icon svg { width: 100%; height: 100%; }
 
@@ -225,7 +252,7 @@ header {
 <div class="page">
 
   <div class="page-title">
-    <h1>Gem Weight Calculator</h1>
+    <h1>LithoMass Gem Weight Calculator</h1>
     <p>Estimated carat weight from physical measurements</p>
   </div>
 
@@ -233,6 +260,9 @@ header {
   <div class="card">
     <div class="card-title">Shape</div>
     <div class="shape-grid" id="shapeGrid"></div>
+    <div class="shape-toggle-wrap">
+      <button class="shape-toggle-btn" id="shapeToggleBtn" onclick="toggleShapeMenu()">Show more</button>
+    </div>
   </div>
 
   <!-- Stone & SG -->
@@ -267,7 +297,7 @@ header {
     <div class="card-title">Corrections</div>
 
     <div class="corr-section" id="roseSection" style="display:none">
-      <span class="corr-label">Rose cut style — count the triangular crown facets visible from above. More facets = taller dome = more weight per L×W×D.</span>
+      <span class="corr-label">Rose cut style — count the triangular crown facets visible from above.</span>
       <div class="corr-btns" id="roseStyleBtns">
         <button class="corr-btn" onclick="pickCorr('roseStyle',this,0.67)">3-facet — very flat</button>
         <button class="corr-btn" onclick="pickCorr('roseStyle',this,0.87)">6-facet — six-point</button>
@@ -278,7 +308,7 @@ header {
     <div class="divider" id="roseDiv" style="display:none"></div>
 
     <div class="corr-section" id="heartSection" style="display:none">
-      <span class="corr-label">Heart cleft depth — measure the V-notch at the top as a fraction of total length (point-to-cleft length). Deeper cleft = more material removed = lighter stone.</span>
+      <span class="corr-label">Heart cleft depth — measure the V-notch at the top as a fraction of total length (point-to-cleft length).</span>
       <div class="corr-btns" id="heartCleftBtns">
         <button class="corr-btn" onclick="pickCorr('heartCleft',this,1.05)">Shallow — cleft &lt; 20% of length</button>
         <button class="corr-btn active" onclick="pickCorr('heartCleft',this,1.00)">Typical — cleft 20–30%</button>
@@ -347,6 +377,23 @@ header {
   </div>
 
 </div><!-- /page -->
+
+<footer class="site-footer">
+  <div class="footer-divider"></div>
+  <div class="footer-row">
+    <div class="footer-logo-lockup">
+      <div class="footer-logo-diamond"></div>
+      <div class="footer-logo-text">
+        <span class="footer-logo-main">100 Ways</span>
+        <span class="footer-logo-sub">LithoMass</span>
+      </div>
+    </div>
+    <div class="footer-contact">
+      <a href="mailto:ewan@100ways.com">Contact us</a> for bugs or issues
+    </div>
+  </div>
+  <div class="footer-credit">&copy; 2026 100 Ways &middot; Designed by Ewan Taylor</div>
+</footer>
 
 <script>
 // ════════════════════════════════════════════════════════════════
@@ -468,6 +515,8 @@ const SHAPES = [
   { id:'slabrect', label:'Rectangular\nSlab',   sf:0.00475, kd:null,    dims:'lwd',    dr:0.20, cv:0.05 },
   { id:'bead',     label:'Bead',                sf:0.00262, kd:null,    dims:'round',  dr:1.00, cv:0.10 },
 ];
+
+const HIDDEN_SHAPES = new Set(['navette','heart','asscher','radiant','trillion','slabround','slabrect','bead']);
 
 // SVG icons (36×26 viewBox)
 const ICONS = {
@@ -597,6 +646,7 @@ const S = {
   heartCleft: 1.00,     // heart-only
   pearShoulder: 1.00,   // pear-only
   mode: 'mc',           // 'quick' (deterministic ±5%) | 'mc' (Monte Carlo CI)
+  shapeMenuExpanded: false,
 };
 
 // Presidium caliper σ — 1σ measurement uncertainty per repeated-measurement test
@@ -620,12 +670,23 @@ function init() {
 // ════════════════════════════════════════════════════════════════
 
 function renderShapeGrid() {
-  document.getElementById('shapeGrid').innerHTML = SHAPES.map(sh =>
-    `<button class="shape-btn${sh.id === S.shape ? ' active' : ''}" onclick="selectShape('${sh.id}')">
+  const showHidden = S.shapeMenuExpanded || HIDDEN_SHAPES.has(S.shape);
+  document.getElementById('shapeGrid').innerHTML = SHAPES.map(sh => {
+    if (!showHidden && HIDDEN_SHAPES.has(sh.id)) return '';
+    return `<button class="shape-btn${sh.id === S.shape ? ' active' : ''}" onclick="selectShape('${sh.id}')">
       <div class="shape-icon">${ICONS[sh.id] || ''}</div>
       <span style="white-space:pre-line">${sh.label}</span>
-    </button>`
-  ).join('');
+    </button>`;
+  }).join('');
+  const toggleBtn = document.getElementById('shapeToggleBtn');
+  if (toggleBtn) {
+    toggleBtn.textContent = S.shapeMenuExpanded ? 'Show less' : 'Show more';
+  }
+}
+
+function toggleShapeMenu() {
+  S.shapeMenuExpanded = !S.shapeMenuExpanded;
+  renderShapeGrid();
 }
 
 // Map dims between layout types so values survive a shape change

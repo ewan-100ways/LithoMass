@@ -19,6 +19,8 @@
   --border:      #DDD6CC;
   --series-base: #C4973A;
   --series-mc:   #48B484;
+  --series-old:  #9B6FD8;
+  --series-dendritics: #4A90E2;
   --ok:          #2E7D32;
   --ok-bg:       #E8F5E9;
   --warn:        #BF6000;
@@ -42,13 +44,52 @@ header {
 .logo-sub  { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-top: 1px; }
 .header-tag { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
 
-.page { max-width: 960px; margin: 0 auto; padding: 24px 16px 60px; display: flex; flex-direction: column; gap: 14px; }
+.page { max-width: 1320px; margin: 0 auto; padding: 24px 16px 60px; display: flex; flex-direction: column; gap: 14px; }
 .page-title { text-align: center; padding: 8px 0 4px; }
 .page-title h1 { font-family: 'Cormorant Garamond', serif; font-size: 1.9rem; font-weight: 400; letter-spacing: 0.02em; }
 .page-title p  { font-size: 11px; color: var(--mid); font-family: 'DM Mono', monospace; margin-top: 4px; letter-spacing: 0.05em; }
 
 .card { background: var(--warm-white); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; }
 .card-title { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mid); margin-bottom: 14px; }
+.card-title-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.card-title-row .card-title { margin-bottom: 0; }
+
+.series-toggles { display: flex; gap: 6px; flex-wrap: wrap; }
+.series-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 12px; border: 1.5px solid var(--border);
+  background: transparent; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-size: 11px; color: var(--charcoal); transition: all 0.1s;
+}
+.series-toggle:hover { border-color: var(--gold); }
+.series-toggle .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.series-toggle.inactive { color: var(--light); opacity: 0.6; }
+.series-toggle.inactive .dot { opacity: 0.35; }
+
+/* ── TABS ── */
+.card-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.card-tab {
+  padding: 5px 12px; border-radius: 6px; border: 1.5px solid transparent;
+  background: transparent; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-size: 11px; color: var(--mid); transition: all 0.1s;
+}
+.card-tab:hover { color: var(--charcoal); }
+.card-tab.active { background: var(--cream); border-color: var(--border); color: var(--charcoal); font-weight: 500; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.tab-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.tab-subtoggles { display: flex; gap: 6px; flex-wrap: wrap; }
+.chart-note { font-size: 11px; color: var(--light); font-family: 'DM Mono', monospace; margin-top: 8px; }
+
+/* ── COLUMN VISIBILITY TOGGLE ── */
+.col-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 12px; border: 1.5px dashed var(--border);
+  background: transparent; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-size: 11px; color: var(--light); transition: all 0.1s;
+}
+.col-toggle:hover { border-color: var(--gold); color: var(--charcoal); }
+.col-toggle.active { color: var(--charcoal); border-style: solid; border-color: var(--border); }
 
 textarea {
   width: 100%; height: 130px; font-family: 'DM Mono', monospace; font-size: 11px;
@@ -88,12 +129,22 @@ textarea:focus { border-color: var(--gold); }
   font-size: 11px; font-family: 'DM Mono', monospace; color: var(--warn);
 }
 
+/* ── FILTER BAR ── */
+.filter-bar {
+  background: var(--gold-pale); border: 1px solid var(--gold);
+  border-radius: 6px; padding: 9px 16px; display: flex; align-items: center;
+  justify-content: space-between; gap: 12px;
+  font-size: 11px; font-family: 'DM Mono', monospace; color: var(--gold-deep);
+}
+
 /* ── SUMMARY STATS ── */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
 .stat-col { background: var(--cream); border-radius: 6px; padding: 14px 16px; }
 .stat-col-title { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
 .stat-col-title.base { color: var(--series-base); }
 .stat-col-title.mc   { color: var(--series-mc); }
+.stat-col-title.old  { color: var(--series-old); }
+.stat-col-title.dendritics { color: var(--series-dendritics); }
 .stat-row { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; border-bottom: 1px solid var(--border); }
 .stat-row:last-child { border-bottom: none; }
 .stat-label { font-size: 11px; color: var(--mid); }
@@ -101,7 +152,7 @@ textarea:focus { border-color: var(--gold); }
 
 /* ── BREAKDOWN TABLE ── */
 .breakdown-wrap { overflow-x: auto; }
-.breakdown-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 640px; }
+.breakdown-table { border-collapse: collapse; font-size: 12px; }
 .breakdown-table th {
   padding: 6px 10px; font-size: 10px; font-weight: 500; letter-spacing: 0.06em;
   text-transform: uppercase; color: var(--mid); border-bottom: 1.5px solid var(--border); white-space: nowrap;
@@ -111,9 +162,13 @@ textarea:focus { border-color: var(--gold); }
 .breakdown-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 .breakdown-table tr:last-child td { border-bottom: none; }
 .breakdown-table tr.data-row:hover td { background: var(--cream); }
+.breakdown-table tr.data-row { cursor: pointer; }
+.breakdown-table tr.data-row.filter-active td { background: var(--gold-pale); }
+.breakdown-table tr.data-row.filter-active .shape-tag { background: var(--gold-deep); color: #fff; }
 
 /* ── SCATTER CANVAS ── */
 .scatter-canvas { width: 100%; display: block; cursor: crosshair; }
+.scatter-tooltip,
 #scatterTooltip {
   position: fixed; display: none;
   background: var(--charcoal); color: #fff; border-radius: 5px; padding: 8px 12px;
@@ -124,7 +179,7 @@ textarea:focus { border-color: var(--gold); }
 
 /* ── RESULTS TABLE ── */
 .table-wrap { overflow-x: auto; }
-.results-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 960px; }
+.results-table { border-collapse: collapse; font-size: 12px; }
 .results-table th {
   padding: 6px 10px; font-size: 10px; font-weight: 500; letter-spacing: 0.06em;
   text-transform: uppercase; color: var(--mid); border-bottom: 1.5px solid var(--border);
@@ -201,7 +256,7 @@ textarea:focus { border-color: var(--gold); }
 
   <div class="page-title">
     <h1>Formula Accuracy Test</h1>
-    <p>Base · Monte Carlo — compared against verified carat weights</p>
+    <p>Base · Monte Carlo · Old Calculator — compared against verified carat weights</p>
   </div>
 
   <div class="card">
@@ -228,20 +283,83 @@ textarea:focus { border-color: var(--gold); }
       <button class="btn-ghost" style="padding:5px 12px;font-size:11px" onclick="restoreAll()">Restore all</button>
     </div>
 
+    <div id="filterBar" class="filter-bar" style="display:none">
+      <span id="filterDesc"></span>
+      <button class="btn-ghost" style="padding:5px 12px;font-size:11px" onclick="clearFilter()">Clear filter</button>
+    </div>
+
+    <div class="series-toggles" id="seriesToggles" style="margin-bottom:-2px"></div>
+
     <div class="card">
-      <div class="card-title" id="summaryTitle">Overall Accuracy</div>
-      <div class="stats-grid" id="summaryGrid"></div>
+      <div class="card-title-row">
+        <div class="card-title" id="summaryTitle">Statistics</div>
+        <div class="card-tabs" id="statsTabs">
+          <button class="card-tab active" onclick="setStatsTab('summary')">Summary</button>
+          <button class="card-tab" onclick="setStatsTab('histogram')">Error Distribution</button>
+        </div>
+      </div>
+      <div class="tab-panel active" id="statsPanel-summary">
+        <div class="stats-grid" id="summaryGrid"></div>
+      </div>
+      <div class="tab-panel" id="statsPanel-histogram">
+        <canvas id="histogramCanvas" class="scatter-canvas"></canvas>
+        <div class="chart-note">Distribution of signed error % for each active series, grouped into bins.</div>
+      </div>
     </div>
 
     <div class="card">
-      <div class="card-title">Breakdown by Shape</div>
-      <div class="breakdown-wrap" id="shapeBreakdown"></div>
+      <div class="card-title-row">
+        <div class="card-title">Breakdown</div>
+        <div class="card-tabs" id="breakdownTabs">
+          <button class="card-tab active" onclick="setBreakdownTab('shape')">By Shape</button>
+          <button class="card-tab" onclick="setBreakdownTab('material')">By Material</button>
+        </div>
+      </div>
+      <div class="tab-toolbar" id="breakdownToolbar">
+        <div></div>
+        <button class="col-toggle" id="codesToggle" onclick="toggleIndustryCodes()">Show industry codes</button>
+      </div>
+      <div class="tab-panel active" id="breakdownPanel-shape">
+        <div class="breakdown-wrap" id="shapeBreakdown"></div>
+      </div>
+      <div class="tab-panel" id="breakdownPanel-material">
+        <div class="breakdown-wrap" id="materialBreakdown"></div>
+      </div>
     </div>
 
     <div class="card">
-      <div class="card-title">Scatter Plot — Predicted vs Actual</div>
-      <canvas id="scatterCanvas" class="scatter-canvas"></canvas>
-      <div id="scatterTooltip"></div>
+      <div class="card-title-row">
+        <div class="card-title">Charts</div>
+        <div class="card-tabs" id="chartsTabs">
+          <button class="card-tab active" onclick="setChartsTab('pred')">Predicted vs Actual</button>
+          <button class="card-tab" onclick="setChartsTab('residual')">Residuals</button>
+          <button class="card-tab" onclick="setChartsTab('aspect')">Aspect Ratio</button>
+          <button class="card-tab" onclick="setChartsTab('modifier')">Modifier Impact</button>
+        </div>
+      </div>
+      <div class="tab-panel active" id="chartsPanel-pred">
+        <canvas id="scatterCanvas" class="scatter-canvas"></canvas>
+        <div id="scatterTooltip" class="scatter-tooltip"></div>
+      </div>
+      <div class="tab-panel" id="chartsPanel-residual">
+        <canvas id="residualCanvas" class="scatter-canvas"></canvas>
+        <div id="residualTooltip" class="scatter-tooltip"></div>
+      </div>
+      <div class="tab-panel" id="chartsPanel-aspect">
+        <canvas id="aspectCanvas" class="scatter-canvas"></canvas>
+        <div id="aspectTooltip" class="scatter-tooltip"></div>
+        <div class="chart-note">Showing oval, pear &amp; marquise — the only shapes with a dimensional (L/W) adjustment.</div>
+      </div>
+      <div class="tab-panel" id="chartsPanel-modifier">
+        <div class="tab-toolbar">
+          <div class="card-tabs" id="modifierTypeToggles">
+            <button class="card-tab active" onclick="setModifierType('girdle')">Girdle Modifier</button>
+            <button class="card-tab" onclick="setModifierType('bulge')">Bulge Modifier</button>
+          </div>
+        </div>
+        <canvas id="modifierCanvas" class="scatter-canvas"></canvas>
+        <div class="chart-note">Box-and-whisker of absolute error % for each active series, grouped by modifier magnitude.</div>
+      </div>
     </div>
 
     <div class="card">
@@ -261,30 +379,80 @@ textarea:focus { border-color: var(--gold); }
 // SHAPE & STONE DATA  (mirrored from index.html)
 // ════════════════════════════════════════════════════
 const SHAPES_DATA = {
-  round:    { kd: 0.00612, dims: 'round', sf: 0.00180, cv: 0.02 },
-  oec:      { kd: 0.00600, dims: 'round', sf: 0.00180, cv: 0.08 },
-  omc:      { kd: 0.00615, dims: 'lwd',   sf: 0.00180, cv: 0.08 },
-  rose:     { kd: 0.00500, dims: 'lwd',   sf: 0.00150, cv: 0.08 },
-  oval:     { kd: 0.00650, dims: 'lwd',   sf: 0.00200, cv: 0.06 },
-  pear:     { kd: 0.00612, dims: 'lwd',   sf: 0.00180, cv: 0.06 },
-  marquise: { kd: 0.00583, dims: 'lwd',   sf: 0.00160, cv: 0.06 },
-  navette:  { kd: null,    dims: 'lwd',   sf: 0.00225, cv: 0.06 },
-  heart:    { kd: 0.00598, dims: 'lwd',   sf: 0.00175, cv: 0.06 },
-  cushion:  { kd: 0.00838, dims: 'lwd',   sf: 0.00220, cv: 0.06 },
-  princess: { kd: 0.00827, dims: 'lwd',   sf: 0.00230, cv: 0.03 },
-  rectcut:  { kd: 0.00757, dims: 'lwd',   sf: 0.00215, cv: 0.04 },
-  asscher:  { kd: 0.00861, dims: 'lwd',   sf: 0.00230, cv: 0.04 },
-  emerald:  { kd: 0.00890, dims: 'lwd',   sf: 0.00250, cv: 0.04 },
-  radiant:  { kd: 0.00820, dims: 'lwd',   sf: 0.00250, cv: 0.05 },
-  trillion: { kd: 0.00510, dims: 'lwd',   sf: 0.00170, cv: 0.06 },
-  baguette: { kd: 0.00915, dims: 'lwd',   sf: 0.00250, cv: 0.04 },
-  cabochon: { kd: null,    dims: 'lwd',   sf: 0.00270, cv: 0.08 },
+  // sf values calibrated against 20,837 GemSelect stones (v3) + 13,263 independent stones (Ruby/Sapphire/Emerald)
+  // Coloured stones are cut deeper than diamonds → most sf higher than original diamond-derived values
+  round:    { kd: 0.00612, dims: 'round', sf: 0.00200, cv: 0.02 },  // +11% — calibrated on independent dataset (n=2,996)
+  oec:      { kd: 0.00600, dims: 'round', sf: 0.00200, cv: 0.08 },  // matched to round
+  omc:      { kd: 0.00615, dims: 'lwd',   sf: 0.00200, cv: 0.08 },  // matched to round
+  rose:     { kd: 0.00500, dims: 'lwd',   sf: 0.00150, cv: 0.08 },  // UNCALIBRATED — insufficient clean data
+  oval:     { kd: 0.00650, dims: 'lwd',   sf: 0.00222, cv: 0.06 },  // +11% — calibrated (n=7,621 GemSelect)
+  pear:     { kd: 0.00612, dims: 'lwd',   sf: 0.00195, cv: 0.06 },  // +8% — calibrated (n=2,391 GemSelect)
+  marquise: { kd: 0.00583, dims: 'lwd',   sf: 0.00160, cv: 0.06 },  // RESET — conflicting dataset signals
+  navette:  { kd: null,    dims: 'lwd',   sf: 0.00225, cv: 0.06 },  // UNCALIBRATED — no data
+  heart:    { kd: 0.00598, dims: 'lwd',   sf: 0.00194, cv: 0.06 },  // +11% — calibrated (n=952 GemSelect)
+  cushion:  { kd: 0.00838, dims: 'lwd',   sf: 0.00242, cv: 0.06 },  // +10% — calibrated (n=255 GemSelect)
+  princess: { kd: 0.00827, dims: 'lwd',   sf: 0.00265, cv: 0.03 },  // +15% — calibrated excl. Square Step-Cut (n=771)
+  rectcut:  { kd: 0.00757, dims: 'lwd',   sf: 0.00215, cv: 0.04 },  // UNCALIBRATED — no data
+  asscher:  { kd: 0.00861, dims: 'lwd',   sf: 0.00230, cv: 0.04 },  // UNCALIBRATED — n=93 insufficient
+  emerald:  { kd: 0.00890, dims: 'lwd',   sf: 0.00268, cv: 0.04 },  // +7% — calibrated on independent dataset (n=2,362)
+  radiant:  { kd: 0.00820, dims: 'lwd',   sf: 0.00240, cv: 0.05 },  // -4% — calibrated on independent dataset (n=234)
+  trillion: { kd: 0.00510, dims: 'lwd',   sf: 0.00185, cv: 0.06 },  // +9% — calibrated (n=1,156 GemSelect)
+  baguette: { kd: 0.00915, dims: 'lwd',   sf: 0.00250, cv: 0.04 },  // UNCALIBRATED — no data
+  cabochon: { kd: null,    dims: 'lwd',   sf: 0.00270, cv: 0.08 },  // UNCALIBRATED — needs subtype split
+};
+
+// Mirrored from old-carat-calculator.html's SHAPES array (legacy formula reference —
+// used only to compute the "Old Calculator" comparison series, never modified itself).
+const OLD_SHAPES_DATA = {
+  round:    { sf: 0.00180, kd: 0.00610, dims: 'round',  oec: false },
+  oec:      { sf: 0.00180, kd: 0.00600, dims: 'round',  oec: true  },
+  omc:      { sf: 0.00180, kd: 0.00615, dims: 'lwd',    oec: true  },
+  oval:     { sf: 0.00200, kd: 0.00625, dims: 'lwd',    oec: false },
+  pear:     { sf: 0.00180, kd: 0.00590, dims: 'lwd',    oec: false },
+  marquise: { sf: 0.00160, kd: 0.00565, dims: 'lwd',    oec: false },
+  heart:    { sf: 0.00175, kd: 0.00590, dims: 'lwd',    oec: false },
+  cushion:  { sf: 0.00180, kd: 0.00815, dims: 'lwd',    oec: false },
+  princess: { sf: 0.00230, kd: 0.00820, dims: 'lwd',    oec: false },
+  emerald:  { sf: 0.00250, kd: 0.00920, dims: 'lwd',    oec: false },
+  radiant:  { sf: 0.00250, kd: 0.00820, dims: 'lwd',    oec: false },
+  asscher:  { sf: 0.00230, kd: 0.00830, dims: 'lwd',    oec: false },
+  trillion: { sf: 0.00170, kd: 0.00570, dims: 'lwd',    oec: false },
+  baguette: { sf: 0.00250, kd: 0.00915, dims: 'lwd',    oec: false },
+  rose:     { sf: 0.00150, kd: 0.00500, dims: 'lwd',    oec: false },
+  cabochon: { sf: 0.00270, kd: null,    dims: 'lwd',    oec: false },
 };
 
 const STONE_SG = {
   Diamond: 3.52, Ruby: 4.00, Sapphire: 4.00, Emerald: 2.72,
   Amethyst: 2.65, Aquamarine: 2.72, Citrine: 2.65, Topaz: 3.53,
   Tanzanite: 3.35, Tourmaline: 3.06, Spinel: 3.60,
+  // ── Extended for GemSelect catalog data ──
+  'Pyrope Garnet': 3.78, Peridot: 3.34, Zircon: 4.60, Opal: 2.10,
+  'Strawberry Quartz': 2.65, Labradorite: 2.70, 'Hessonite Garnet': 3.61,
+  'Rhodolite Garnet': 3.84, Beryl: 2.72, Moonstone: 2.57,
+  'Almandine Garnet': 4.05, Sunstone: 2.65, "Tiger's Eye": 2.65,
+  Morganite: 2.80, 'Mystic Quartz': 2.65, Kyanite: 3.65,
+  'Rainbow Moonstone': 2.70, 'Star Sapphire': 4.00, 'Andesine Labradorite': 2.68,
+  'Star Diopside': 3.29, 'Black Opal': 2.10, 'Golden Beryl': 2.72,
+  Agate: 2.60, Chalcedony: 2.60, Spectrolite: 2.70,
+  'Chrome Diopside': 3.29, Pietersite: 2.65, 'Rutile Quartz': 2.65,
+  'Dendritic Agate': 2.60, 'Fire Opal': 2.05, Larimar: 2.85,
+  Jasper: 2.65, 'Rose Quartz': 2.65, "Sillimanite Cat's Eye": 3.25,
+  Onyx: 2.60, Quartz: 2.65, Sillimanite: 3.25,
+  Andalusite: 3.17, 'Opal Triplet': 2.40, 'Chocolate Opal': 2.10,
+  Apatite: 3.19, Malachite: 3.95, Iolite: 2.61,
+  Prehnite: 2.90, Amazonite: 2.56, Jadeite: 3.34,
+  Jade: 2.95, 'Star Ruby': 4.00, Fluorite: 3.18,
+  Grandidierite: 2.99, 'Smoky Quartz': 2.65, 'Tsavorite Garnet': 3.64,
+  'Lapis Lazuli': 2.75,
+  // ── Additional entries to eliminate 3.52 diamond fallback ──
+  Ametrine: 2.65, Hematite: 5.26, 'Spessartite Garnet': 4.12,
+  'Demantoid Garnet': 3.84, Bloodstone: 2.71, 'Star Moonstone': 2.57,
+  Chrysoprase: 2.61, Sphalerite: 3.95, 'Malaya Garnet': 3.72,
+  'Quartz With Marcasite': 2.70, Coral: 2.68, 'Color-Change Garnet': 3.75,
+  Nuummite: 3.10, 'Maw-Sit-Sit': 3.00, Kornerupine: 3.28,
+  'Cat\'s Eye Moonstone': 2.57, Ammolite: 2.80, Seraphinite: 2.55,
+  Cinnabar: 2.50, Turquoise: 2.75, Aventurine: 2.65,
 };
 
 // IGI SG ranges — used by Monte Carlo to triangularly sample density
@@ -300,6 +468,82 @@ const STONES_DATA = {
   Tanzanite:  { sg: 3.35, sgMin: 3.33, sgMax: 3.36 },
   Tourmaline: { sg: 3.06, sgMin: 2.82, sgMax: 3.90 },
   Spinel:     { sg: 3.60, sgMin: 3.54, sgMax: 3.63 },
+  // ── Extended for GemSelect catalog data ──
+  'Pyrope Garnet':        { sg: 3.78, sgMin: 3.65, sgMax: 3.87 },
+  Peridot:                { sg: 3.34, sgMin: 3.28, sgMax: 3.48 },
+  Zircon:                 { sg: 4.60, sgMin: 3.95, sgMax: 4.73 },
+  Opal:                   { sg: 2.10, sgMin: 1.98, sgMax: 2.20 },
+  'Strawberry Quartz':    { sg: 2.65, sgMin: 2.63, sgMax: 2.67 },
+  Labradorite:            { sg: 2.70, sgMin: 2.68, sgMax: 2.72 },
+  'Hessonite Garnet':     { sg: 3.61, sgMin: 3.60, sgMax: 3.68 },
+  'Rhodolite Garnet':     { sg: 3.84, sgMin: 3.80, sgMax: 3.90 },
+  Beryl:                  { sg: 2.72, sgMin: 2.68, sgMax: 2.80 },
+  Moonstone:              { sg: 2.57, sgMin: 2.55, sgMax: 2.61 },
+  'Almandine Garnet':     { sg: 4.05, sgMin: 3.95, sgMax: 4.20 },
+  Sunstone:               { sg: 2.65, sgMin: 2.60, sgMax: 2.70 },
+  "Tiger's Eye":          { sg: 2.65, sgMin: 2.64, sgMax: 2.71 },
+  Morganite:              { sg: 2.80, sgMin: 2.71, sgMax: 2.90 },
+  'Mystic Quartz':        { sg: 2.65, sgMin: 2.63, sgMax: 2.67 },
+  Kyanite:                { sg: 3.65, sgMin: 3.53, sgMax: 3.70 },
+  'Rainbow Moonstone':    { sg: 2.70, sgMin: 2.68, sgMax: 2.72 },
+  'Star Sapphire':        { sg: 4.00, sgMin: 3.95, sgMax: 4.03 },
+  'Andesine Labradorite': { sg: 2.68, sgMin: 2.65, sgMax: 2.70 },
+  'Star Diopside':        { sg: 3.29, sgMin: 3.25, sgMax: 3.34 },
+  'Black Opal':           { sg: 2.10, sgMin: 1.98, sgMax: 2.20 },
+  'Golden Beryl':         { sg: 2.72, sgMin: 2.68, sgMax: 2.80 },
+  Agate:                  { sg: 2.60, sgMin: 2.58, sgMax: 2.64 },
+  Chalcedony:             { sg: 2.60, sgMin: 2.58, sgMax: 2.64 },
+  Spectrolite:            { sg: 2.70, sgMin: 2.68, sgMax: 2.72 },
+  'Chrome Diopside':      { sg: 3.29, sgMin: 3.25, sgMax: 3.34 },
+  Pietersite:             { sg: 2.65, sgMin: 2.63, sgMax: 2.70 },
+  'Rutile Quartz':        { sg: 2.65, sgMin: 2.63, sgMax: 2.67 },
+  'Dendritic Agate':      { sg: 2.60, sgMin: 2.58, sgMax: 2.64 },
+  'Fire Opal':            { sg: 2.05, sgMin: 1.97, sgMax: 2.10 },
+  Larimar:                { sg: 2.85, sgMin: 2.74, sgMax: 3.00 },
+  Jasper:                 { sg: 2.65, sgMin: 2.61, sgMax: 2.71 },
+  'Rose Quartz':          { sg: 2.65, sgMin: 2.63, sgMax: 2.67 },
+  "Sillimanite Cat's Eye":{ sg: 3.25, sgMin: 3.23, sgMax: 3.27 },
+  Onyx:                   { sg: 2.60, sgMin: 2.58, sgMax: 2.64 },
+  Quartz:                 { sg: 2.65, sgMin: 2.63, sgMax: 2.67 },
+  Sillimanite:            { sg: 3.25, sgMin: 3.23, sgMax: 3.27 },
+  Andalusite:             { sg: 3.17, sgMin: 3.13, sgMax: 3.21 },
+  'Opal Triplet':         { sg: 2.40, sgMin: 2.10, sgMax: 2.65 },
+  'Chocolate Opal':       { sg: 2.10, sgMin: 1.98, sgMax: 2.20 },
+  Apatite:                { sg: 3.19, sgMin: 3.16, sgMax: 3.22 },
+  Malachite:              { sg: 3.95, sgMin: 3.60, sgMax: 4.05 },
+  Iolite:                 { sg: 2.61, sgMin: 2.57, sgMax: 2.66 },
+  Prehnite:               { sg: 2.90, sgMin: 2.80, sgMax: 2.95 },
+  Amazonite:              { sg: 2.56, sgMin: 2.54, sgMax: 2.63 },
+  Jadeite:                { sg: 3.34, sgMin: 3.30, sgMax: 3.38 },
+  Jade:                   { sg: 2.95, sgMin: 2.90, sgMax: 3.10 },
+  'Star Ruby':            { sg: 4.00, sgMin: 3.97, sgMax: 4.05 },
+  Fluorite:               { sg: 3.18, sgMin: 3.16, sgMax: 3.20 },
+  Grandidierite:          { sg: 2.99, sgMin: 2.95, sgMax: 3.02 },
+  'Smoky Quartz':         { sg: 2.65, sgMin: 2.63, sgMax: 2.67 },
+  'Tsavorite Garnet':     { sg: 3.64, sgMin: 3.57, sgMax: 3.67 },
+  'Lapis Lazuli':         { sg: 2.75, sgMin: 2.50, sgMax: 3.00 },
+  // ── Additional entries to eliminate 3.52 fallback ──
+  Ametrine:               { sg: 2.65, sgMin: 2.63, sgMax: 2.67 },
+  Hematite:               { sg: 5.26, sgMin: 5.20, sgMax: 5.30 },
+  'Spessartite Garnet':   { sg: 4.12, sgMin: 4.05, sgMax: 4.20 },
+  'Demantoid Garnet':     { sg: 3.84, sgMin: 3.81, sgMax: 3.87 },
+  Bloodstone:             { sg: 2.71, sgMin: 2.68, sgMax: 2.74 },
+  'Star Moonstone':       { sg: 2.57, sgMin: 2.55, sgMax: 2.61 },
+  Chrysoprase:            { sg: 2.61, sgMin: 2.58, sgMax: 2.64 },
+  Sphalerite:             { sg: 3.95, sgMin: 3.90, sgMax: 4.10 },
+  'Malaya Garnet':        { sg: 3.72, sgMin: 3.65, sgMax: 3.87 },
+  'Quartz With Marcasite':{ sg: 2.70, sgMin: 2.65, sgMax: 3.10 },
+  Coral:                  { sg: 2.68, sgMin: 2.60, sgMax: 2.78 },
+  'Color-Change Garnet':  { sg: 3.75, sgMin: 3.65, sgMax: 3.85 },
+  Nuummite:               { sg: 3.10, sgMin: 3.05, sgMax: 3.15 },
+  'Maw-Sit-Sit':          { sg: 3.00, sgMin: 2.85, sgMax: 3.20 },
+  Kornerupine:            { sg: 3.28, sgMin: 3.27, sgMax: 3.34 },
+  "Cat's Eye Moonstone":  { sg: 2.57, sgMin: 2.55, sgMax: 2.61 },
+  Ammolite:               { sg: 2.80, sgMin: 2.60, sgMax: 2.90 },
+  Seraphinite:            { sg: 2.55, sgMin: 2.50, sgMax: 2.60 },
+  Cinnabar:               { sg: 2.50, sgMin: 2.10, sgMax: 2.90 },
+  Turquoise:              { sg: 2.75, sgMin: 2.60, sgMax: 2.90 },
+  Aventurine:             { sg: 2.65, sgMin: 2.63, sgMax: 2.67 },
 };
 
 const MC_N = 800; // iterations per row at small scale — see getMcIterations for large datasets
@@ -347,6 +591,35 @@ function calcWeight(shapeId, L, W, D, girdle, bulge, stoneName, sg) {
     ct = calcL * calcW * D * sh.sf * lwAdj * effSg;
   }
   return ct * (girdle || 1) * (bulge || 1);
+}
+
+// Replicates the legacy old-carat-calculator.html formula exactly (no L:W adjustment,
+// no L/W reordering — dims used as given) for direct comparison against current LithoMass output.
+function calcWeightOld(shapeId, L, W, D, girdle, bulge, stoneName, sg) {
+  const sh = OLD_SHAPES_DATA[shapeId];
+  if (!sh || !L || !W || !D) return null;
+  let calcL, calcW;
+  if (sh.dims === 'round') {
+    const avg = (L + W) / 2;
+    calcL = avg; calcW = avg;
+  } else {
+    calcL = L; calcW = W;
+  }
+  const isDiamond = (stoneName === 'Diamond');
+  let ct;
+  if (isDiamond && sh.kd !== null) {
+    ct = calcL * calcW * D * sh.kd;
+  } else {
+    const effSg = sg || STONE_SG[stoneName] || 3.52;
+    ct = calcL * calcW * D * sh.sf * effSg;
+  }
+  ct *= (girdle || 1) * (bulge || 1);
+  return ct;
+}
+
+function calcDendriticsErr(dendritics, actual) {
+  if (dendritics === null || !actual) return null;
+  return (dendritics - actual) / actual * 100;
 }
 
 // Approximate normal sample N(mu, sigma) via Irwin-Hall (sum of 4 uniforms).
@@ -431,6 +704,7 @@ function parseCSV(text) {
       girdle_mod: parseFloat(r['girdle_modifier']) || 1.0,
       bulge_mod:  parseFloat(r['bulge_modifier'])  || 1.0,
       sg:         parseFloat(r['SG']) || 0,
+      dendritics: r['dendritics_estimate'] ? parseFloat(r['dendritics_estimate']) : null,
       actual:     parseFloat(r['Actual_Weight']) || 0,
     };
     if (row.shape_id && row.L && row.W && row.D && row.actual) rows.push(row);
@@ -444,15 +718,21 @@ function processRows(rows) {
     const sg = r.sg || null;
     const base     = calcWeight(r.shape_id, r.L, r.W, r.D, 1.0,          1.0,         r.gemstone, sg);
     const mc       = calcWeightMC(r.shape_id, r.L, r.W, r.D, r.girdle_mod, r.bulge_mod, r.gemstone, sg, mcIter);
+    const old      = calcWeightOld(r.shape_id, r.L, r.W, r.D, r.girdle_mod, r.bulge_mod, r.gemstone, sg);
+    const dendritics = r.dendritics;
     const baseErr  = (base !== null && r.actual) ? (base - r.actual) / r.actual * 100 : null;
     const mcErr    = (mc   !== null && r.actual) ? (mc   - r.actual) / r.actual * 100 : null;
+    const oldErr   = (old  !== null && r.actual) ? (old  - r.actual) / r.actual * 100 : null;
+    const dendriticsErr = (dendritics !== null && r.actual) ? (dendritics - r.actual) / r.actual * 100 : null;
     return {
       index: r.index, gemstone: r.gemstone, shape: r.shape, shape_id: r.shape_id,
       L: r.L, W: r.W, D: r.D, girdle_mod: r.girdle_mod, bulge_mod: r.bulge_mod, actual: r.actual,
-      base: base, mc: mc,
-      baseErr: baseErr, mcErr: mcErr,
+      base: base, mc: mc, old: old, dendritics: dendritics,
+      baseErr: baseErr, mcErr: mcErr, oldErr: oldErr, dendriticsErr: dendriticsErr,
+      absDendriticsErr: dendriticsErr !== null ? Math.abs(dendriticsErr) : null,
       absBaseErr: baseErr !== null ? Math.abs(baseErr) : null,
       absMcErr:   mcErr   !== null ? Math.abs(mcErr)   : null,
+      absOldErr:  oldErr  !== null ? Math.abs(oldErr)  : null,
     };
   });
 }
@@ -488,6 +768,16 @@ function groupByShape(results) {
     if (!map[r.shape_id]) map[r.shape_id] = { shape_id: r.shape_id, codes: {}, rows: [] };
     map[r.shape_id].codes[r.shape] = true;
     map[r.shape_id].rows.push(r);
+  });
+  return Object.values(map).sort(function(a, b) { return b.rows.length - a.rows.length; });
+}
+
+function groupByGemstone(results) {
+  const map = {};
+  results.forEach(function(r) {
+    const key = r.gemstone || '—';
+    if (!map[key]) map[key] = { gemstone: key, rows: [] };
+    map[key].rows.push(r);
   });
   return Object.values(map).sort(function(a, b) { return b.rows.length - a.rows.length; });
 }
@@ -529,57 +819,254 @@ function renderSummary(results) {
       + '<div class="stat-row"><span class="stat-label">Within \xb110%</span><span class="stat-value">' + stats.within10.toFixed(0) + '%</span></div>'
       + '</div>';
   }
-  const mcs = computeStats(results, 'mcErr');
+  const mcs  = computeStats(results, 'mcErr');
+  const olds = computeStats(results, 'oldErr');
+  const dends = computeStats(results, 'dendriticsErr');
   document.getElementById('summaryGrid').innerHTML =
-    col(bs,  'base', 'Base formula — no modifiers') +
-    col(mcs, 'mc',   'Monte Carlo mean (n=' + getMcIterations(results.length) + ') — girdle + bulge applied');
+    col(bs,   'base', 'Base formula — no modifiers') +
+    col(mcs,  'mc',   'Monte Carlo mean (n=' + getMcIterations(results.length) + ') — girdle + bulge applied') +
+    col(olds, 'old',  'Old calculator — girdle + bulge applied') +
+    col(dends, 'dendritics', 'Dendritics — external reference');
 }
 
 // ════════════════════════════════════════════════════
 // RENDER — SHAPE BREAKDOWN
 // ════════════════════════════════════════════════════
 
+function deltaPpHtml(delta) {
+  if (delta === null) return '—';
+  if (Math.abs(delta) < 0.05) return '<span style="color:var(--mid)">0.0pp</span>';
+  if (delta > 0)               return '<span style="color:var(--ok)">↓ ' + delta.toFixed(1) + 'pp</span>';
+  return '<span style="color:var(--bad)">↑ ' + Math.abs(delta).toFixed(1) + 'pp</span>';
+}
+
+function breakdownMonoCell(v) { return '<td class="right" style="font-family:\'DM Mono\',monospace">' + v + '</td>'; }
+function breakdownGroupCols(stats) {
+  return breakdownMonoCell(stats ? stats.mae.toFixed(1)+'%' : '—')
+    + breakdownMonoCell(stats ? fmtPct(stats.median) : '—')
+    + breakdownMonoCell(stats ? stats.within5.toFixed(0)+'%' : '—');
+}
+function breakdownGroupHead() {
+  return '<th class="right" style="border-left:2px solid var(--border)">MAE</th><th class="right">Med</th><th class="right">≤5%</th>';
+}
+function breakdownDeltaCells(bs, mcs, olds, dends) {
+  const delta    = (bs && mcs)   ? bs.mae   - mcs.mae : null;
+  const deltaOld = (olds && mcs) ? olds.mae - mcs.mae : null;
+  const deltaDend = (dends && mcs) ? dends.mae - mcs.mae : null;
+  let cells = '';
+  if (_showBase && _showMC) cells += '<td class="right" style="font-family:\'DM Mono\',monospace">' + deltaPpHtml(delta) + '</td>';
+  if (_showOld  && _showMC) cells += '<td class="right" style="font-family:\'DM Mono\',monospace">' + deltaPpHtml(deltaOld) + '</td>';
+  if (_showDendritics && _showMC) cells += '<td class="right" style="font-family:\'DM Mono\',monospace">' + deltaPpHtml(deltaDend) + '</td>';
+  return cells;
+}
+function breakdownDeltaHead() {
+  let head = '';
+  if (_showBase && _showMC) head += '<th rowspan="2" class="right">Δ MAE<br>Base→MC</th>';
+  if (_showOld  && _showMC) head += '<th rowspan="2" class="right">Δ MAE<br>Old→MC</th>';
+  if (_showDendritics && _showMC) head += '<th rowspan="2" class="right">Δ MAE<br>Dend→MC</th>';
+  return head;
+}
+function breakdownSeriesHeads(thead1, thead2) {
+  const groupHead = breakdownGroupHead();
+  if (_showOld)  { thead1 += '<th colspan="3" class="center" style="color:var(--series-old);border-left:2px solid var(--border)">Old Calculator</th>'; thead2 += groupHead; }
+  if (_showBase) { thead1 += '<th colspan="3" class="center" style="color:var(--series-base);border-left:2px solid var(--border)">Base</th>'; thead2 += groupHead; }
+  if (_showMC)   { thead1 += '<th colspan="3" class="center" style="color:var(--series-mc);border-left:2px solid var(--border)">Monte Carlo</th>'; thead2 += groupHead; }
+  if (_showDendritics) { thead1 += '<th colspan="3" class="center" style="color:var(--series-dendritics);border-left:2px solid var(--border)">Dendritics</th>'; thead2 += groupHead; }
+  return [thead1, thead2];
+}
+
 function renderShapeBreakdown(results) {
   const groups = groupByShape(results);
-  const monoCell = function(v) { return '<td class="right" style="font-family:\'DM Mono\',monospace">' + v + '</td>'; };
+
   const tbody = groups.map(function(g) {
-    const bs  = computeStats(g.rows, 'baseErr');
-    const mcs = computeStats(g.rows, 'mcErr');
-    const delta = (bs && mcs) ? bs.mae - mcs.mae : null;
-    let dHtml = '—';
-    if (delta !== null) {
-      if (Math.abs(delta) < 0.05) dHtml = '<span style="color:var(--mid)">0.0pp</span>';
-      else if (delta > 0)         dHtml = '<span style="color:var(--ok)">↓ ' + delta.toFixed(1) + 'pp</span>';
-      else                        dHtml = '<span style="color:var(--bad)">↑ ' + Math.abs(delta).toFixed(1) + 'pp</span>';
+    const bs   = computeStats(g.rows, 'baseErr');
+    const mcs  = computeStats(g.rows, 'mcErr');
+    const olds = computeStats(g.rows, 'oldErr');
+    const dends = computeStats(g.rows, 'dendriticsErr');
+    const active = _filterType === 'shape' && _filterValue === g.shape_id;
+    let row = '<tr class="data-row' + (active ? ' filter-active' : '') + '" onclick="setFilter(\'shape\', \'' + escAttr(g.shape_id) + '\')" title="Click to filter charts to this shape">'
+      + '<td><span class="shape-tag">' + g.shape_id + '</span></td>';
+    if (_showIndustryCodes) {
+      const codes = Object.keys(g.codes).filter(Boolean).join(', ') || '—';
+      row += '<td style="color:var(--mid);font-family:\'DM Mono\',monospace;font-size:11px">' + codes + '</td>';
     }
-    const codes = Object.keys(g.codes).filter(Boolean).join(', ') || '—';
-    return '<tr class="data-row">'
-      + '<td><span class="shape-tag">' + g.shape_id + '</span></td>'
-      + '<td style="color:var(--mid);font-family:\'DM Mono\',monospace;font-size:11px">' + codes + '</td>'
-      + '<td class="right">' + g.rows.length.toLocaleString() + '</td>'
-      + monoCell(bs ? bs.mae.toFixed(1)+'%' : '—')
-      + monoCell(bs ? fmtPct(bs.median) : '—')
-      + monoCell(bs ? bs.within5.toFixed(0)+'%' : '—')
-      + monoCell(mcs ? mcs.mae.toFixed(1)+'%' : '—')
-      + monoCell(mcs ? fmtPct(mcs.median) : '—')
-      + monoCell(mcs ? mcs.within5.toFixed(0)+'%' : '—')
-      + '<td class="right" style="font-family:\'DM Mono\',monospace">' + dHtml + '</td>'
-      + '</tr>';
+    row += '<td class="right">' + g.rows.length.toLocaleString() + '</td>';
+    if (_showOld)  row += breakdownGroupCols(olds);
+    if (_showBase) row += breakdownGroupCols(bs);
+    if (_showMC)   row += breakdownGroupCols(mcs);
+    if (_showDendritics) row += breakdownGroupCols(dends);
+    row += breakdownDeltaCells(bs, mcs, olds, dends);
+    return row + '</tr>';
   }).join('');
 
+  let thead1 = '<tr><th rowspan="2">Shape ID</th>' + (_showIndustryCodes ? '<th rowspan="2">Industry Code(s)</th>' : '') + '<th rowspan="2" class="right">n</th>';
+  let thead2 = '<tr>';
+  [thead1, thead2] = breakdownSeriesHeads(thead1, thead2);
+  thead1 += breakdownDeltaHead() + '</tr>';
+  thead2 += '</tr>';
+
+  const numGroups = (_showOld?1:0) + (_showBase?1:0) + (_showMC?1:0) + (_showDendritics?1:0);
+  const numDeltas = (_showBase && _showMC ? 1 : 0) + (_showOld && _showMC ? 1 : 0) + (_showDendritics && _showMC ? 1 : 0);
+  const minWidth = (_showIndustryCodes ? 160 : 90) + numGroups * 180 + numDeltas * 120;
+
   document.getElementById('shapeBreakdown').innerHTML =
-    '<table class="breakdown-table"><thead>'
-    + '<tr>'
-    + '<th rowspan="2">Shape ID</th>'
-    + '<th rowspan="2">Industry Code(s)</th>'
-    + '<th rowspan="2" class="right">n</th>'
-    + '<th colspan="3" class="center" style="color:var(--series-base);border-left:2px solid var(--border)">Base</th>'
-    + '<th colspan="3" class="center" style="color:var(--series-mc);border-left:2px solid var(--border)">Monte Carlo</th>'
-    + '<th rowspan="2" class="right">Δ MAE</th>'
-    + '</tr><tr>'
-    + '<th class="right" style="border-left:2px solid var(--border)">MAE</th><th class="right">Med</th><th class="right">≤5%</th>'
-    + '<th class="right" style="border-left:2px solid var(--border)">MAE</th><th class="right">Med</th><th class="right">≤5%</th>'
-    + '</tr></thead><tbody>' + tbody + '</tbody></table>';
+    '<table class="breakdown-table" style="min-width:' + minWidth + 'px"><thead>' + thead1 + thead2 + '</thead><tbody>' + tbody + '</tbody></table>';
+}
+
+function renderMaterialBreakdown(results) {
+  const groups = groupByGemstone(results);
+
+  const tbody = groups.map(function(g) {
+    const bs   = computeStats(g.rows, 'baseErr');
+    const mcs  = computeStats(g.rows, 'mcErr');
+    const olds = computeStats(g.rows, 'oldErr');
+    const dends = computeStats(g.rows, 'dendriticsErr');
+    const active = _filterType === 'gemstone' && _filterValue === g.gemstone;
+    let row = '<tr class="data-row' + (active ? ' filter-active' : '') + '" onclick="setFilter(\'gemstone\', \'' + escAttr(g.gemstone) + '\')" title="Click to filter charts to this gemstone">'
+      + '<td><span class="shape-tag">' + g.gemstone + '</span></td>'
+      + '<td class="right">' + g.rows.length.toLocaleString() + '</td>';
+    if (_showOld)  row += breakdownGroupCols(olds);
+    if (_showBase) row += breakdownGroupCols(bs);
+    if (_showMC)   row += breakdownGroupCols(mcs);
+    if (_showDendritics) row += breakdownGroupCols(dends);
+    row += breakdownDeltaCells(bs, mcs, olds, dends);
+    return row + '</tr>';
+  }).join('');
+
+  let thead1 = '<tr><th rowspan="2">Gemstone</th><th rowspan="2" class="right">n</th>';
+  let thead2 = '<tr>';
+  [thead1, thead2] = breakdownSeriesHeads(thead1, thead2);
+  thead1 += breakdownDeltaHead() + '</tr>';
+  thead2 += '</tr>';
+
+  const numGroups = (_showOld?1:0) + (_showBase?1:0) + (_showMC?1:0) + (_showDendritics?1:0);
+  const numDeltas = (_showBase && _showMC ? 1 : 0) + (_showOld && _showMC ? 1 : 0) + (_showDendritics && _showMC ? 1 : 0);
+  const minWidth = 90 + numGroups * 180 + numDeltas * 120;
+
+  document.getElementById('materialBreakdown').innerHTML =
+    '<table class="breakdown-table" style="min-width:' + minWidth + 'px"><thead>' + thead1 + thead2 + '</thead><tbody>' + tbody + '</tbody></table>';
+}
+
+// ════════════════════════════════════════════════════
+// SERIES VISIBILITY TOGGLES
+// Shared with the scatter plot — controls which series appear
+// in the shape breakdown, full results table, and scatter plot.
+// ════════════════════════════════════════════════════
+
+function renderSeriesToggles() {
+  const el = document.getElementById('seriesToggles');
+  if (!el) return;
+  const items = [
+    { key: 'old',  label: 'Old Calculator', show: _showOld,  color: 'var(--series-old)' },
+    { key: 'base', label: 'Base',           show: _showBase, color: 'var(--series-base)' },
+    { key: 'mc',   label: 'Monte Carlo',    show: _showMC,   color: 'var(--series-mc)' },
+    { key: 'dendritics', label: 'Dendritics', show: _showDendritics, color: 'var(--series-dendritics)' },
+  ];
+  el.innerHTML = items.map(function(it) {
+    return '<button class="series-toggle' + (it.show ? '' : ' inactive') + '" onclick="toggleSeries(\'' + it.key + '\')">'
+      + '<span class="dot" style="background:' + it.color + '"></span>' + it.label
+      + '</button>';
+  }).join('');
+}
+
+function toggleSeries(key) {
+  if (key === 'old')       _showOld  = !_showOld;
+  else if (key === 'base') _showBase = !_showBase;
+  else if (key === 'dendritics') _showDendritics = !_showDendritics;
+  else                      _showMC   = !_showMC;
+  renderSeriesToggles();
+  renderTablePage();
+  renderSummary(getFilteredResults());
+  renderActiveTabs(_currentResults);
+}
+
+// ════════════════════════════════════════════════════
+// TABS — Statistics / Breakdown / Charts
+// ════════════════════════════════════════════════════
+
+let _statsTab = 'summary';
+let _breakdownTab = 'shape';
+let _chartsTab = 'pred';
+let _modifierType = 'girdle';
+let _showIndustryCodes = false;
+
+function activateTab(tabsId, panelPrefix, activeKey, keys) {
+  const tabsEl = document.getElementById(tabsId);
+  if (!tabsEl) return;
+  const buttons = tabsEl.querySelectorAll('.card-tab');
+  keys.forEach(function(k, i) {
+    if (buttons[i]) buttons[i].classList.toggle('active', k === activeKey);
+    if (panelPrefix) {
+      const panel = document.getElementById(panelPrefix + '-' + k);
+      if (panel) panel.classList.toggle('active', k === activeKey);
+    }
+  });
+}
+
+// Re-renders whichever Statistics / Breakdown / Charts tab is currently
+// active, plus the always-visible series toggles. Called after the
+// dataset changes (new run, row deleted/restored) or a series is toggled.
+function renderActiveTabs(results) {
+  if (_breakdownTab === 'material') renderMaterialBreakdown(results);
+  else renderShapeBreakdown(results);
+
+  const filtered = getFilteredResults();
+  if (_statsTab === 'histogram') drawErrorHistogram(filtered);
+
+  if (!filtered.length) return;
+  if (_chartsTab === 'pred') drawScatterPlot(filtered);
+  else if (_chartsTab === 'residual') drawResidualPlot(filtered);
+  else if (_chartsTab === 'aspect') drawAspectPlot(filtered);
+  else if (_chartsTab === 'modifier') drawModifierBoxplot(filtered);
+}
+
+function setStatsTab(tab) {
+  _statsTab = tab;
+  activateTab('statsTabs', 'statsPanel', tab, ['summary', 'histogram']);
+  if (tab === 'histogram') drawErrorHistogram(getFilteredResults());
+}
+
+function setBreakdownTab(tab) {
+  _breakdownTab = tab;
+  activateTab('breakdownTabs', 'breakdownPanel', tab, ['shape', 'material']);
+  const codesToggle = document.getElementById('codesToggle');
+  if (codesToggle) codesToggle.style.display = tab === 'shape' ? '' : 'none';
+  if (tab === 'material') renderMaterialBreakdown(_currentResults);
+  else renderShapeBreakdown(_currentResults);
+}
+
+function setChartsTab(tab) {
+  _chartsTab = tab;
+  activateTab('chartsTabs', 'chartsPanel', tab, ['pred', 'residual', 'aspect', 'modifier']);
+  const filtered = getFilteredResults();
+  if (!filtered.length) return;
+  if (tab === 'pred') {
+    drawScatterPlot(filtered);
+    ensureCanvasTooltip();
+  } else if (tab === 'residual') {
+    drawResidualPlot(filtered);
+    ensureChartTooltip('residualCanvas', 'residualTooltip', 'residual', genericChartTooltip);
+  } else if (tab === 'aspect') {
+    drawAspectPlot(filtered);
+    ensureChartTooltip('aspectCanvas', 'aspectTooltip', 'aspect', genericChartTooltip);
+  } else if (tab === 'modifier') {
+    drawModifierBoxplot(filtered);
+  }
+}
+
+function setModifierType(type) {
+  _modifierType = type;
+  activateTab('modifierTypeToggles', null, type, ['girdle', 'bulge']);
+  const filtered = getFilteredResults();
+  if (filtered.length) drawModifierBoxplot(filtered);
+}
+
+function toggleIndustryCodes() {
+  _showIndustryCodes = !_showIndustryCodes;
+  const btn = document.getElementById('codesToggle');
+  btn.classList.toggle('active', _showIndustryCodes);
+  btn.textContent = (_showIndustryCodes ? 'Hide' : 'Show') + ' industry codes';
+  renderShapeBreakdown(_currentResults);
 }
 
 // ════════════════════════════════════════════════════
@@ -589,7 +1076,7 @@ function renderShapeBreakdown(results) {
 let _scatterPoints = [];
 let _scatterGrid = {};
 let _legendHitAreas = [];
-let _showBase = true, _showMC = true;
+let _showBase = true, _showMC = true, _showOld = true, _showDendritics = true;
 let _sampledScatter = false, _scatterSampleN = 0;
 const SCATTER_GRID_SIZE = 16;
 const MAX_SCATTER_POINTS = 20000;
@@ -654,6 +1141,8 @@ function drawScatterPlot(results) {
     if (r.actual < dMin) dMin = r.actual; if (r.actual > dMax) dMax = r.actual;
     if (r.base !== null) { if (r.base < dMin) dMin = r.base; if (r.base > dMax) dMax = r.base; }
     if (r.mc   !== null) { if (r.mc   < dMin) dMin = r.mc;   if (r.mc   > dMax) dMax = r.mc; }
+    if (r.old  !== null) { if (r.old  < dMin) dMin = r.old;  if (r.old  > dMax) dMax = r.old; }
+    if (r.dendritics !== null) { if (r.dendritics < dMin) dMin = r.dendritics; if (r.dendritics > dMax) dMax = r.dendritics; }
   }
   const pad  = Math.max((dMax - dMin) * 0.10, 0.05);
   const axMin = Math.max(0, dMin - pad), axMax = dMax + pad;
@@ -733,6 +1222,32 @@ function drawScatterPlot(results) {
     ctx.fill();
   }
 
+  if (_showOld) {
+    ctx.fillStyle = 'rgba(155,111,216,0.6)';
+    ctx.beginPath();
+    for (var i = 0; i < results.length; i += stride) {
+      const r = results[i];
+      if (r.old === null) continue;
+      const px = sx(r.actual), py = sy(r.old);
+      addScatterPoint(px, py, 'old', r);
+      ctx.moveTo(px + PT, py); ctx.arc(px, py, PT, 0, Math.PI * 2);
+    }
+    ctx.fill();
+  }
+
+  if (_showDendritics) {
+    ctx.fillStyle = 'rgba(74,144,226,0.6)';
+    ctx.beginPath();
+    for (var i = 0; i < results.length; i += stride) {
+      const r = results[i];
+      if (r.dendritics === null) continue;
+      const px = sx(r.actual), py = sy(r.dendritics);
+      addScatterPoint(px, py, 'dendritics', r);
+      ctx.moveTo(px + PT, py); ctx.arc(px, py, PT, 0, Math.PI * 2);
+    }
+    ctx.fill();
+  }
+
   ctx.restore(); // end clip
 
   // Chart border
@@ -762,6 +1277,8 @@ function drawScatterPlot(results) {
   _legendHitAreas = [
     { key: 'base', x: lx, y: ly,      w: 82, h: 20 },
     { key: 'mc',   x: lx, y: ly + 20, w: 82, h: 20 },
+    { key: 'old',  x: lx, y: ly + 40, w: 82, h: 20 },
+    { key: 'dendritics', x: lx, y: ly + 60, w: 82, h: 20 },
   ];
 
   ctx.font = '11px DM Sans, sans-serif'; ctx.textAlign = 'left';
@@ -792,24 +1309,50 @@ function drawScatterPlot(results) {
     ctx.beginPath(); ctx.moveTo(lx + 16, ly + 25); ctx.lineTo(lx + 16 + tw3, ly + 25); ctx.stroke();
   }
 
+  // Old calculator row
+  ctx.globalAlpha = _showOld ? 1 : 0.3;
+  ctx.fillStyle = 'rgba(155,111,216,0.8)';
+  ctx.beginPath(); ctx.arc(lx + 6, ly + 46, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = _showOld ? '#6B6460' : '#C0BAB4';
+  ctx.fillText('Old calculator', lx + 16, ly + 50);
+  if (!_showOld) {
+    const tw4 = ctx.measureText('Old calculator').width;
+    ctx.strokeStyle = '#C0BAB4'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(lx + 16, ly + 45); ctx.lineTo(lx + 16 + tw4, ly + 45); ctx.stroke();
+  }
+
+  // Dendritics row
+  ctx.globalAlpha = _showDendritics ? 1 : 0.3;
+  ctx.fillStyle = 'rgba(74,144,226,0.8)';
+  ctx.beginPath(); ctx.arc(lx + 6, ly + 66, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = _showDendritics ? '#6B6460' : '#C0BAB4';
+  ctx.fillText('Dendritics', lx + 16, ly + 70);
+  if (!_showDendritics) {
+    const tw5 = ctx.measureText('Dendritics').width;
+    ctx.strokeStyle = '#C0BAB4'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(lx + 16, ly + 65); ctx.lineTo(lx + 16 + tw5, ly + 65); ctx.stroke();
+  }
+
   ctx.strokeStyle = 'rgba(196,151,58,0.65)'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
-  ctx.beginPath(); ctx.moveTo(lx, ly + 48); ctx.lineTo(lx + 12, ly + 48); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(lx, ly + 88); ctx.lineTo(lx + 12, ly + 88); ctx.stroke();
   ctx.setLineDash([]);
   ctx.font = '10px DM Sans, sans-serif'; ctx.fillStyle = '#B5AFA9';
-  ctx.fillText('y = x', lx + 16, ly + 52);
+  ctx.fillText('y = x', lx + 16, ly + 92);
 
-  ctx.fillStyle = '#E7E0D5'; ctx.fillRect(lx, ly + 63, 12, 9);
-  ctx.fillStyle = '#B5AFA9'; ctx.fillText('\xb15% band', lx + 16, ly + 71);
+  ctx.fillStyle = '#E7E0D5'; ctx.fillRect(lx, ly + 103, 12, 9);
+  ctx.fillStyle = '#B5AFA9'; ctx.fillText('\xb15% band', lx + 16, ly + 111);
 
-  ctx.fillStyle = '#F0EBE2'; ctx.fillRect(lx, ly + 79, 12, 9);
-  ctx.fillStyle = '#B5AFA9'; ctx.fillText('\xb110% band', lx + 16, ly + 87);
+  ctx.fillStyle = '#F0EBE2'; ctx.fillRect(lx, ly + 119, 12, 9);
+  ctx.fillStyle = '#B5AFA9'; ctx.fillText('\xb110% band', lx + 16, ly + 127);
 
   ctx.font = '10px DM Mono, monospace';
-  ctx.fillText('n = ' + results.length.toLocaleString(), lx, ly + 108);
+  ctx.fillText('n = ' + results.length.toLocaleString(), lx, ly + 148);
   if (_sampledScatter) {
     ctx.fillStyle = '#B5AFA9';
-    ctx.fillText('(' + _scatterSampleN.toLocaleString() + ' plotted,', lx, ly + 122);
-    ctx.fillText('1 in ' + stride + ' sampled)', lx, ly + 134);
+    ctx.fillText('(' + _scatterSampleN.toLocaleString() + ' plotted,', lx, ly + 162);
+    ctx.fillText('1 in ' + stride + ' sampled)', lx, ly + 174);
   }
 }
 
@@ -844,10 +1387,10 @@ function ensureCanvasTooltip() {
       var nearest = findNearestScatterPoint(cx, cy);
       if (nearest) {
         const r   = nearest.row;
-        const val = nearest.type === 'base' ? r.base : r.mc;
-        const err = nearest.type === 'base' ? r.baseErr : r.mcErr;
-        const col = nearest.type === 'base' ? '#E8C97A' : '#72D4A4';
-        const lbl = nearest.type === 'base' ? 'Base calc' : 'Monte Carlo';
+        const val = nearest.type === 'base' ? r.base : nearest.type === 'old' ? r.old : nearest.type === 'mc' ? r.mc : r.dendritics;
+        const err = nearest.type === 'base' ? r.baseErr : nearest.type === 'old' ? r.oldErr : nearest.type === 'mc' ? r.mcErr : r.dendriticsErr;
+        const col = nearest.type === 'base' ? '#E8C97A' : nearest.type === 'old' ? '#9B6FD8' : nearest.type === 'mc' ? '#72D4A4' : '#4A90E2';
+        const lbl = nearest.type === 'base' ? 'Base calc' : nearest.type === 'old' ? 'Old calculator' : nearest.type === 'mc' ? 'Monte Carlo' : 'Dendritics';
         const errStr = err !== null ? (err > 0 ? '+' : '') + err.toFixed(1) + '%' : '—';
         tip.style.cssText = 'display:block;left:' + (e.clientX + 14) + 'px;top:' + (e.clientY - 44) + 'px';
         tip.innerHTML =
@@ -879,10 +1422,8 @@ function ensureCanvasTooltip() {
     for (var li = 0; li < _legendHitAreas.length; li++) {
       const h = _legendHitAreas[li];
       if (cx >= h.x && cx <= h.x + h.w && cy >= h.y && cy <= h.y + h.h) {
-        if (h.key === 'base') _showBase = !_showBase;
-        else                   _showMC  = !_showMC;
         tip.style.display = 'none';
-        drawScatterPlot(_currentResults);
+        toggleSeries(h.key);
         return;
       }
     }
@@ -900,12 +1441,652 @@ function ensureCanvasTooltip() {
 }
 
 // ════════════════════════════════════════════════════
+// RENDER — GENERIC ERROR SCATTER (Residuals / Aspect Ratio)
+// Shares axis/grid/legend/tooltip plumbing across chart tabs that
+// plot a signed error % (baseErr/mcErr/oldErr) against some X metric.
+// ════════════════════════════════════════════════════
+
+let _chartStates = {
+  residual: { points: [], grid: {}, legendHit: [] },
+  aspect:   { points: [], grid: {}, legendHit: [] },
+};
+
+const SERIES_META = {
+  base: { fill: 'rgba(196,151,58,0.6)',  dot: 'rgba(196,151,58,0.8)',  label: 'Base calc',     show: function() { return _showBase; } },
+  mc:   { fill: 'rgba(72,180,132,0.6)',  dot: 'rgba(72,180,132,0.8)',  label: 'Monte Carlo',   show: function() { return _showMC; } },
+  old:  { fill: 'rgba(155,111,216,0.6)', dot: 'rgba(155,111,216,0.8)', label: 'Old calculator', show: function() { return _showOld; } },
+  dendritics: { fill: 'rgba(74,144,226,0.6)', dot: 'rgba(74,144,226,0.8)', label: 'Dendritics', show: function() { return _showDendritics; } },
+};
+const SERIES_ORDER = ['base', 'mc', 'old', 'dendritics'];
+
+function seriesValue(r, type) { return type === 'base' ? r.base : type === 'old' ? r.old : type === 'mc' ? r.mc : r.dendritics; }
+function seriesError(r, type) { return type === 'base' ? r.baseErr : type === 'old' ? r.oldErr : type === 'mc' ? r.mcErr : r.dendriticsErr; }
+
+function drawScatterChart(cfg) {
+  const canvas = document.getElementById(cfg.canvasId);
+  if (!canvas) return;
+  const state = _chartStates[cfg.stateKey];
+  const results = cfg.results;
+
+  const DPR  = Math.min(window.devicePixelRatio || 1, 2);
+  const cssW = Math.max(canvas.offsetWidth || 680, 400);
+  const cssH = Math.round(cssW * (440 / 680));
+  canvas.width  = Math.round(cssW * DPR);
+  canvas.height = Math.round(cssH * DPR);
+  canvas.style.height = cssH + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(DPR, DPR);
+  const W = cssW, H = cssH;
+  const M = { t: 28, r: 150, b: 56, l: 64 };
+  const CW = W - M.l - M.r, CH = H - M.t - M.b;
+
+  ctx.clearRect(0, 0, W, H);
+  state.points = []; state.grid = {}; state.legendHit = [];
+
+  if (!results.length) {
+    ctx.font = '13px DM Sans, sans-serif';
+    ctx.fillStyle = '#B5AFA9';
+    ctx.textAlign = 'center';
+    ctx.fillText('No data to display', W / 2, H / 2);
+    return;
+  }
+
+  // X domain
+  let xMin = Infinity, xMax = -Infinity;
+  results.forEach(function(r) {
+    const x = cfg.getX(r);
+    if (x === null || x === undefined) return;
+    if (x < xMin) xMin = x; if (x > xMax) xMax = x;
+  });
+  if (xMin === Infinity) { xMin = 0; xMax = 1; }
+  const xPad = Math.max((xMax - xMin) * 0.08, (xMax - xMin) || 1) * (xMax === xMin ? 0.5 : 1) || 0.05;
+  const axXMin = xMin - Math.max((xMax - xMin) * 0.08, 0.02);
+  const axXMax = xMax + Math.max((xMax - xMin) * 0.08, 0.02);
+
+  // Y domain — signed error %, across all active series
+  let yMin = Infinity, yMax = -Infinity;
+  SERIES_ORDER.forEach(function(type) {
+    if (!SERIES_META[type].show()) return;
+    results.forEach(function(r) {
+      const v = seriesValue(r, type);
+      const y = seriesError(r, type);
+      if (v === null || y === null) return;
+      if (y < yMin) yMin = y; if (y > yMax) yMax = y;
+    });
+  });
+  if (yMin === Infinity) { yMin = -10; yMax = 10; }
+  if (cfg.bands) { yMin = Math.min(yMin, -10); yMax = Math.max(yMax, 10); }
+  const yPad = Math.max((yMax - yMin) * 0.1, 1);
+  const axYMin = yMin - yPad, axYMax = yMax + yPad;
+
+  function sx(v) { return M.l + (v - axXMin) / (axXMax - axXMin) * CW; }
+  function sy(v) { return M.t + CH - (v - axYMin) / (axYMax - axYMin) * CH; }
+
+  const xTicks = niceTicks(axXMin, axXMax, 6);
+  const yTicks = niceTicks(axYMin, axYMax, 6);
+
+  // Grid
+  ctx.strokeStyle = '#EDE7DF'; ctx.lineWidth = 1;
+  xTicks.forEach(function(v) {
+    ctx.beginPath(); ctx.moveTo(sx(v), M.t); ctx.lineTo(sx(v), M.t + CH); ctx.stroke();
+  });
+  yTicks.forEach(function(v) {
+    ctx.beginPath(); ctx.moveTo(M.l, sy(v)); ctx.lineTo(M.l + CW, sy(v)); ctx.stroke();
+  });
+
+  ctx.save();
+  ctx.beginPath(); ctx.rect(M.l, M.t, CW, CH); ctx.clip();
+
+  if (cfg.bands) {
+    const y10hi = Math.min(axYMax, 10), y10lo = Math.max(axYMin, -10);
+    ctx.fillStyle = '#F0EBE2';
+    ctx.fillRect(M.l, sy(y10hi), CW, sy(y10lo) - sy(y10hi));
+    const y5hi = Math.min(axYMax, 5), y5lo = Math.max(axYMin, -5);
+    ctx.fillStyle = '#E7E0D5';
+    ctx.fillRect(M.l, sy(y5hi), CW, sy(y5lo) - sy(y5hi));
+  }
+
+  // y = 0 reference line
+  ctx.strokeStyle = 'rgba(196,151,58,0.65)'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
+  ctx.beginPath(); ctx.moveTo(M.l, sy(0)); ctx.lineTo(M.l + CW, sy(0)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Optional vertical reference lines (e.g. ideal aspect ratios)
+  (cfg.vLines || []).forEach(function(vl) {
+    if (vl.x < axXMin || vl.x > axXMax) return;
+    ctx.strokeStyle = 'rgba(107,100,96,0.35)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(sx(vl.x), M.t); ctx.lineTo(sx(vl.x), M.t + CH); ctx.stroke();
+    ctx.setLineDash([]);
+  });
+
+  // Points
+  const PT = 3;
+  const stride = Math.max(1, Math.ceil(results.length / MAX_SCATTER_POINTS));
+
+  function addPoint(px, py, type, row) {
+    const idx = state.points.length;
+    state.points.push({ x: px, y: py, type: type, row: row });
+    const key = ((px / SCATTER_GRID_SIZE) | 0) + ',' + ((py / SCATTER_GRID_SIZE) | 0);
+    (state.grid[key] || (state.grid[key] = [])).push(idx);
+  }
+
+  SERIES_ORDER.forEach(function(type) {
+    if (!SERIES_META[type].show()) return;
+    ctx.fillStyle = SERIES_META[type].fill;
+    ctx.beginPath();
+    for (var i = 0; i < results.length; i += stride) {
+      const r = results[i];
+      const x = cfg.getX(r), y = seriesError(r, type);
+      if (x === null || x === undefined || y === null || seriesValue(r, type) === null) continue;
+      const px = sx(x), py = sy(y);
+      addPoint(px, py, type, r);
+      ctx.moveTo(px + PT, py); ctx.arc(px, py, PT, 0, Math.PI * 2);
+    }
+    ctx.fill();
+  });
+
+  ctx.restore(); // end clip
+
+  // Border
+  ctx.strokeStyle = '#DDD6CC'; ctx.lineWidth = 1;
+  ctx.strokeRect(M.l, M.t, CW, CH);
+
+  // Axis ticks + labels
+  ctx.fillStyle = '#6B6460'; ctx.strokeStyle = '#B5AFA9'; ctx.lineWidth = 1;
+  xTicks.forEach(function(v) {
+    const lbl = Math.abs(v) < 0.10 ? v.toFixed(3) : v.toFixed(2);
+    ctx.beginPath(); ctx.moveTo(sx(v), M.t + CH); ctx.lineTo(sx(v), M.t + CH + 5); ctx.stroke();
+    ctx.font = '10px DM Mono, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#6B6460';
+    ctx.fillText(lbl, sx(v), M.t + CH + 17);
+  });
+  yTicks.forEach(function(v) {
+    const lbl = (v > 0 ? '+' : '') + v.toFixed(0) + '%';
+    ctx.beginPath(); ctx.moveTo(M.l - 5, sy(v)); ctx.lineTo(M.l, sy(v)); ctx.stroke();
+    ctx.font = '10px DM Mono, monospace'; ctx.textAlign = 'right'; ctx.fillStyle = '#6B6460';
+    ctx.fillText(lbl, M.l - 9, sy(v) + 4);
+  });
+
+  ctx.font = '11px DM Sans, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#6B6460';
+  ctx.fillText(cfg.xLabel, M.l + CW / 2, H - 6);
+  ctx.save();
+  ctx.translate(14, M.t + CH / 2); ctx.rotate(-Math.PI / 2);
+  ctx.fillText(cfg.yLabel, 0, 0);
+  ctx.restore();
+
+  // Vertical line labels
+  (cfg.vLines || []).forEach(function(vl) {
+    if (vl.x < axXMin || vl.x > axXMax) return;
+    ctx.save();
+    ctx.translate(sx(vl.x) + 3, M.t + 6);
+    ctx.rotate(Math.PI / 2);
+    ctx.font = '9px DM Mono, monospace'; ctx.textAlign = 'left'; ctx.fillStyle = '#9B948D';
+    ctx.fillText(vl.label, 0, 0);
+    ctx.restore();
+  });
+
+  // Legend — clickable toggles, shared with other chart tabs via toggleSeries()
+  const lx = M.l + CW + 16, ly = M.t + 8;
+  SERIES_ORDER.forEach(function(type, i) {
+    state.legendHit.push({ key: type, x: lx, y: ly + i * 20, w: 82, h: 20 });
+  });
+
+  ctx.font = '11px DM Sans, sans-serif'; ctx.textAlign = 'left';
+  SERIES_ORDER.forEach(function(type, i) {
+    const meta = SERIES_META[type], show = meta.show(), yOff = i * 20;
+    ctx.globalAlpha = show ? 1 : 0.3;
+    ctx.fillStyle = meta.dot;
+    ctx.beginPath(); ctx.arc(lx + 6, ly + yOff + 6, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = show ? '#6B6460' : '#C0BAB4';
+    ctx.fillText(meta.label, lx + 16, ly + yOff + 10);
+    if (!show) {
+      const tw = ctx.measureText(meta.label).width;
+      ctx.strokeStyle = '#C0BAB4'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(lx + 16, ly + yOff + 5); ctx.lineTo(lx + 16 + tw, ly + yOff + 5); ctx.stroke();
+    }
+  });
+
+  ctx.font = '10px DM Mono, monospace'; ctx.fillStyle = '#6B6460';
+  ctx.fillText('n = ' + results.length.toLocaleString(), lx, ly + SERIES_ORDER.length * 20 + 8);
+}
+
+function genericChartTooltip(p) {
+  const r = p.row;
+  const val = seriesValue(r, p.type);
+  const err = seriesError(r, p.type);
+  const meta = SERIES_META[p.type];
+  const errStr = err !== null ? (err > 0 ? '+' : '') + err.toFixed(1) + '%' : '—';
+  return '<div style="color:' + meta.dot + ';font-weight:500;margin-bottom:3px">#' + r.index + ' — ' + r.gemstone + ' ' + r.shape + ' (' + r.shape_id + ')</div>'
+    + '<div>' + r.L.toFixed(2) + ' \xd7 ' + r.W.toFixed(2) + ' \xd7 ' + r.D.toFixed(2) + ' mm</div>'
+    + '<div>Actual: <strong>' + r.actual.toFixed(2) + ' ct</strong></div>'
+    + '<div>' + meta.label + ': <strong>' + (val !== null ? val.toFixed(2) : '—') + ' ct</strong> (' + errStr + ')</div>'
+    + '<div style="color:#888;font-size:10px;margin-top:4px">Click to jump to row in table</div>';
+}
+
+function ensureChartTooltip(canvasId, tooltipId, stateKey, formatTip) {
+  const canvas = document.getElementById(canvasId);
+  const tip = document.getElementById(tooltipId);
+  if (!canvas || !tip || canvas._tooltipReady) return;
+  canvas._tooltipReady = true;
+  const state = _chartStates[stateKey];
+  let raf = false;
+
+  function findNearest(cx, cy) {
+    const gx = (cx / SCATTER_GRID_SIZE) | 0, gy = (cy / SCATTER_GRID_SIZE) | 0;
+    var nearest = null, best = Infinity;
+    for (var dx = -1; dx <= 1; dx++) {
+      for (var dy = -1; dy <= 1; dy++) {
+        const idxs = state.grid[(gx + dx) + ',' + (gy + dy)];
+        if (!idxs) continue;
+        for (var k = 0; k < idxs.length; k++) {
+          const p = state.points[idxs[k]];
+          const d = Math.hypot(p.x - cx, p.y - cy);
+          if (d < best && d < 14) { best = d; nearest = p; }
+        }
+      }
+    }
+    return nearest;
+  }
+
+  canvas.addEventListener('mousemove', function(e) {
+    if (raf) return;
+    raf = true;
+    requestAnimationFrame(function() {
+      raf = false;
+      const rect = canvas.getBoundingClientRect();
+      const cx = e.clientX - rect.left, cy = e.clientY - rect.top;
+
+      for (var li = 0; li < state.legendHit.length; li++) {
+        const h = state.legendHit[li];
+        if (cx >= h.x && cx <= h.x + h.w && cy >= h.y && cy <= h.y + h.h) {
+          tip.style.display = 'none';
+          canvas.style.cursor = 'pointer';
+          return;
+        }
+      }
+
+      var nearest = findNearest(cx, cy);
+      if (nearest) {
+        tip.style.cssText = 'display:block;left:' + (e.clientX + 14) + 'px;top:' + (e.clientY - 44) + 'px';
+        tip.innerHTML = formatTip(nearest);
+        canvas.style.cursor = 'pointer';
+      } else {
+        tip.style.display = 'none';
+        canvas.style.cursor = 'crosshair';
+      }
+    });
+  });
+
+  canvas.addEventListener('mouseleave', function() {
+    tip.style.display = 'none';
+    canvas.style.cursor = 'crosshair';
+  });
+
+  canvas.addEventListener('click', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.clientX - rect.left, cy = e.clientY - rect.top;
+
+    for (var li = 0; li < state.legendHit.length; li++) {
+      const h = state.legendHit[li];
+      if (cx >= h.x && cx <= h.x + h.w && cy >= h.y && cy <= h.y + h.h) {
+        tip.style.display = 'none';
+        toggleSeries(h.key);
+        return;
+      }
+    }
+
+    var nearest = findNearest(cx, cy);
+    if (!nearest) return;
+    tip.style.display = 'none';
+    const pageNum = findRowPage(nearest.row.index);
+    goToPage(pageNum);
+    setTimeout(function() { highlightRow(nearest.row.index); }, 60);
+  });
+}
+
+// ════════════════════════════════════════════════════
+// RENDER — RESIDUAL PLOT (Error % vs Actual Weight)
+// ════════════════════════════════════════════════════
+
+function drawResidualPlot(results) {
+  drawScatterChart({
+    canvasId: 'residualCanvas', stateKey: 'residual', results: results,
+    getX: function(r) { return r.actual; },
+    xLabel: 'Actual weight (ct)', yLabel: 'Signed error (%)',
+    bands: true, vLines: [],
+  });
+}
+
+// ════════════════════════════════════════════════════
+// RENDER — ASPECT RATIO CALIBRATION (L/W vs Error %)
+// Only oval, pear & marquise apply a dimensional (L/W) adjustment —
+// other shapes have a fixed ratio and would just show as noise.
+// ════════════════════════════════════════════════════
+
+const ASPECT_SHAPES = {
+  oval:     { ideal: 1.33, label: 'Oval ideal' },
+  pear:     { ideal: 1.50, label: 'Pear ideal' },
+  marquise: { ideal: 2.00, label: 'Marquise ideal' },
+};
+
+function drawAspectPlot(results) {
+  const filtered = results.filter(function(r) {
+    return ASPECT_SHAPES[r.shape_id] && r.L && r.W;
+  });
+  drawScatterChart({
+    canvasId: 'aspectCanvas', stateKey: 'aspect', results: filtered,
+    getX: function(r) { return Math.max(r.L, r.W) / Math.min(r.L, r.W); },
+    xLabel: 'Aspect ratio (L/W)', yLabel: 'Signed error (%)',
+    bands: false,
+    vLines: Object.keys(ASPECT_SHAPES).map(function(k) {
+      return { x: ASPECT_SHAPES[k].ideal, label: ASPECT_SHAPES[k].label };
+    }),
+  });
+}
+
+// ════════════════════════════════════════════════════
+// RENDER — ERROR DISTRIBUTION HISTOGRAM
+// ════════════════════════════════════════════════════
+
+function drawErrorHistogram(results) {
+  const canvas = document.getElementById('histogramCanvas');
+  if (!canvas) return;
+
+  const DPR  = Math.min(window.devicePixelRatio || 1, 2);
+  const cssW = Math.max(canvas.offsetWidth || 680, 400);
+  const cssH = Math.round(cssW * (380 / 680));
+  canvas.width  = Math.round(cssW * DPR);
+  canvas.height = Math.round(cssH * DPR);
+  canvas.style.height = cssH + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(DPR, DPR);
+  const W = cssW, H = cssH;
+  const M = { t: 28, r: 110, b: 50, l: 50 };
+  const CW = W - M.l - M.r, CH = H - M.t - M.b;
+  ctx.clearRect(0, 0, W, H);
+
+  if (!results.length) {
+    ctx.font = '13px DM Sans, sans-serif';
+    ctx.fillStyle = '#B5AFA9';
+    ctx.textAlign = 'center';
+    ctx.fillText('No data to display', W / 2, H / 2);
+    return;
+  }
+
+  const BIN = 5, RANGE = 50;
+  const numBins = (RANGE * 2) / BIN; // 20 bins of 5pp from -50 to +50
+  const numBuckets = numBins + 2;    // plus <-50% and >+50% overflow
+
+  const series = [];
+  if (_showOld)  series.push({ field: 'oldErr',  color: 'rgba(155,111,216,0.65)', label: 'Old Calculator' });
+  if (_showBase) series.push({ field: 'baseErr', color: 'rgba(196,151,58,0.65)',  label: 'Base' });
+  if (_showMC)   series.push({ field: 'mcErr',   color: 'rgba(72,180,132,0.65)',  label: 'Monte Carlo' });
+  if (_showDendritics) series.push({ field: 'dendriticsErr', color: 'rgba(74,144,226,0.65)', label: 'Dendritics' });
+
+  const labels = ['<-50%'];
+  for (var bi = 0; bi < numBins; bi++) labels.push((-RANGE + bi * BIN) + '…' + (-RANGE + (bi + 1) * BIN));
+  labels.push('>+50%');
+
+  const counts = series.map(function(s) {
+    const arr = new Array(numBuckets).fill(0);
+    results.forEach(function(r) {
+      const e = r[s.field];
+      if (e === null) return;
+      if (e < -RANGE) arr[0]++;
+      else if (e >= RANGE) arr[numBuckets - 1]++;
+      else arr[1 + Math.min(numBins - 1, Math.floor((e + RANGE) / BIN))]++;
+    });
+    return arr;
+  });
+
+  if (!series.length) {
+    ctx.font = '13px DM Sans, sans-serif';
+    ctx.fillStyle = '#B5AFA9';
+    ctx.textAlign = 'center';
+    ctx.fillText('No series selected — enable comparisons above', W / 2, H / 2);
+    return;
+  }
+
+  let maxCount = 0;
+  counts.forEach(function(arr) { arr.forEach(function(c) { if (c > maxCount) maxCount = c; }); });
+  if (maxCount === 0) maxCount = 1;
+  const yTicks = niceTicks(0, maxCount * 1.05, 5);
+  const axYMax = Math.max(maxCount, yTicks[yTicks.length - 1] || maxCount);
+
+  function sy(v) { return M.t + CH - (v / axYMax) * CH; }
+
+  // Grid
+  ctx.strokeStyle = '#EDE7DF'; ctx.lineWidth = 1;
+  yTicks.forEach(function(v) {
+    ctx.beginPath(); ctx.moveTo(M.l, sy(v)); ctx.lineTo(M.l + CW, sy(v)); ctx.stroke();
+  });
+
+  // Bars
+  const groupW = CW / numBuckets;
+  const barW = groupW / (series.length + 1);
+  for (var b = 0; b < numBuckets; b++) {
+    series.forEach(function(s, si) {
+      const c = counts[si][b];
+      if (!c) return;
+      const x = M.l + b * groupW + (si + 0.5) * barW;
+      const y = sy(c);
+      ctx.fillStyle = s.color;
+      ctx.fillRect(x, y, barW * 0.85, (M.t + CH) - y);
+    });
+  }
+
+  // Border
+  ctx.strokeStyle = '#DDD6CC'; ctx.lineWidth = 1;
+  ctx.strokeRect(M.l, M.t, CW, CH);
+
+  // Y axis ticks
+  ctx.font = '10px DM Mono, monospace'; ctx.textAlign = 'right'; ctx.fillStyle = '#6B6460'; ctx.strokeStyle = '#B5AFA9';
+  yTicks.forEach(function(v) {
+    ctx.beginPath(); ctx.moveTo(M.l - 5, sy(v)); ctx.lineTo(M.l, sy(v)); ctx.stroke();
+    ctx.fillText(Math.round(v).toLocaleString(), M.l - 9, sy(v) + 4);
+  });
+
+  // X axis bucket labels (rotated)
+  ctx.font = '9px DM Mono, monospace'; ctx.fillStyle = '#6B6460';
+  for (var b2 = 0; b2 < numBuckets; b2++) {
+    const x = M.l + b2 * groupW + groupW / 2;
+    ctx.save();
+    ctx.translate(x, M.t + CH + 8);
+    ctx.rotate(Math.PI / 4);
+    ctx.textAlign = 'left';
+    ctx.fillText(labels[b2], 0, 0);
+    ctx.restore();
+  }
+
+  ctx.font = '11px DM Sans, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#6B6460';
+  ctx.fillText('Signed error (%)', M.l + CW / 2, H - 4);
+  ctx.save();
+  ctx.translate(14, M.t + CH / 2); ctx.rotate(-Math.PI / 2);
+  ctx.fillText('Count', 0, 0);
+  ctx.restore();
+
+  // Legend
+  const lx = M.l + CW + 16, ly = M.t + 8;
+  series.forEach(function(s, si) {
+    ctx.fillStyle = s.color;
+    ctx.fillRect(lx, ly + si * 20, 12, 12);
+    ctx.fillStyle = '#6B6460'; ctx.font = '11px DM Sans, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(s.label, lx + 18, ly + si * 20 + 10);
+  });
+  ctx.font = '10px DM Mono, monospace'; ctx.fillStyle = '#6B6460';
+  ctx.fillText('n = ' + results.length.toLocaleString(), lx, ly + series.length * 20 + 8);
+}
+
+// ════════════════════════════════════════════════════
+// RENDER — MODIFIER IMPACT (Box-and-whisker)
+// Buckets girdle/bulge modifiers by magnitude and compares the
+// absolute-error distribution of each series within each bucket.
+// ════════════════════════════════════════════════════
+
+const MOD_BUCKETS = [
+  { label: '<1.00',     test: function(m) { return m < 1; } },
+  { label: '1.00',      test: function(m) { return m === 1; } },
+  { label: '1.00–1.05', test: function(m) { return m > 1 && m <= 1.05; } },
+  { label: '1.05–1.10', test: function(m) { return m > 1.05 && m <= 1.10; } },
+  { label: '>1.10',     test: function(m) { return m > 1.10; } },
+];
+
+function boxStats(values) {
+  if (!values.length) return null;
+  const sorted = values.slice().sort(function(a, b) { return a - b; });
+  function pct(p) {
+    const idx = (sorted.length - 1) * p;
+    const lo = Math.floor(idx), hi = Math.ceil(idx);
+    if (lo === hi) return sorted[lo];
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+  }
+  return { min: sorted[0], q1: pct(0.25), median: pct(0.5), q3: pct(0.75), max: sorted[sorted.length - 1], n: sorted.length };
+}
+
+function drawModifierBoxplot(results) {
+  const canvas = document.getElementById('modifierCanvas');
+  if (!canvas) return;
+
+  const DPR  = Math.min(window.devicePixelRatio || 1, 2);
+  const cssW = Math.max(canvas.offsetWidth || 680, 400);
+  const cssH = Math.round(cssW * (400 / 680));
+  canvas.width  = Math.round(cssW * DPR);
+  canvas.height = Math.round(cssH * DPR);
+  canvas.style.height = cssH + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(DPR, DPR);
+  const W = cssW, H = cssH;
+  const M = { t: 28, r: 110, b: 56, l: 50 };
+  const CW = W - M.l - M.r, CH = H - M.t - M.b;
+  ctx.clearRect(0, 0, W, H);
+
+  if (!results.length) {
+    ctx.font = '13px DM Sans, sans-serif';
+    ctx.fillStyle = '#B5AFA9';
+    ctx.textAlign = 'center';
+    ctx.fillText('No data to display', W / 2, H / 2);
+    return;
+  }
+
+  const field = _modifierType === 'girdle' ? 'girdle_mod' : 'bulge_mod';
+  const errField = { base: 'absBaseErr', mc: 'absMcErr', old: 'absOldErr', dendritics: 'absDendriticsErr' };
+
+  const series = [];
+  if (_showOld)  series.push({ key: 'old',  color: '#9B6FD8', fill: 'rgba(155,111,216,0.18)', label: 'Old Calculator' });
+  if (_showBase) series.push({ key: 'base', color: '#C4973A', fill: 'rgba(196,151,58,0.18)',  label: 'Base' });
+  if (_showMC)   series.push({ key: 'mc',   color: '#48B484', fill: 'rgba(72,180,132,0.18)',  label: 'Monte Carlo' });
+  if (_showDendritics) series.push({ key: 'dendritics', color: '#4A90E2', fill: 'rgba(74,144,226,0.18)', label: 'Dendritics' });
+
+  const buckets = MOD_BUCKETS.map(function(b) {
+    return { label: b.label, rows: results.filter(function(r) { return b.test(r[field]); }) };
+  }).filter(function(b) { return b.rows.length > 0; });
+
+  if (!buckets.length || !series.length) {
+    ctx.font = '13px DM Sans, sans-serif';
+    ctx.fillStyle = '#B5AFA9';
+    ctx.textAlign = 'center';
+    ctx.fillText(series.length ? 'No data to display' : 'No series selected — enable comparisons above', W / 2, H / 2);
+    return;
+  }
+
+  const boxData = buckets.map(function(bucket) {
+    return series.map(function(s) {
+      const vals = bucket.rows.map(function(r) { return r[errField[s.key]]; }).filter(function(v) { return v !== null; });
+      return boxStats(vals);
+    });
+  });
+
+  let yMax = 0;
+  boxData.forEach(function(row) { row.forEach(function(bs) { if (bs && bs.max > yMax) yMax = bs.max; }); });
+  if (yMax === 0) yMax = 10;
+  const yTicks = niceTicks(0, yMax * 1.08, 6);
+  const axYMax = yTicks[yTicks.length - 1] || (yMax * 1.08);
+
+  function sy(v) { return M.t + CH - (v / axYMax) * CH; }
+
+  // Grid
+  ctx.strokeStyle = '#EDE7DF'; ctx.lineWidth = 1;
+  yTicks.forEach(function(v) {
+    ctx.beginPath(); ctx.moveTo(M.l, sy(v)); ctx.lineTo(M.l + CW, sy(v)); ctx.stroke();
+  });
+
+  const numBuckets = buckets.length;
+  const groupW = CW / numBuckets;
+  const boxW = groupW / (series.length + 1);
+
+  buckets.forEach(function(bucket, bIdx) {
+    series.forEach(function(s, si) {
+      const bs = boxData[bIdx][si];
+      if (!bs) return;
+      const x = M.l + bIdx * groupW + (si + 0.5) * boxW;
+      const w = boxW * 0.6;
+
+      ctx.strokeStyle = s.color; ctx.lineWidth = 1.5;
+      // whiskers
+      ctx.beginPath(); ctx.moveTo(x, sy(bs.min)); ctx.lineTo(x, sy(bs.q1)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x, sy(bs.q3)); ctx.lineTo(x, sy(bs.max)); ctx.stroke();
+      // caps
+      ctx.beginPath(); ctx.moveTo(x - w / 4, sy(bs.min)); ctx.lineTo(x + w / 4, sy(bs.min)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x - w / 4, sy(bs.max)); ctx.lineTo(x + w / 4, sy(bs.max)); ctx.stroke();
+      // box
+      ctx.fillStyle = s.fill;
+      ctx.fillRect(x - w / 2, sy(bs.q3), w, sy(bs.q1) - sy(bs.q3));
+      ctx.strokeRect(x - w / 2, sy(bs.q3), w, sy(bs.q1) - sy(bs.q3));
+      // median
+      ctx.beginPath(); ctx.moveTo(x - w / 2, sy(bs.median)); ctx.lineTo(x + w / 2, sy(bs.median)); ctx.stroke();
+    });
+  });
+
+  // Border
+  ctx.strokeStyle = '#DDD6CC'; ctx.lineWidth = 1;
+  ctx.strokeRect(M.l, M.t, CW, CH);
+
+  // Y axis ticks
+  ctx.font = '10px DM Mono, monospace'; ctx.textAlign = 'right'; ctx.fillStyle = '#6B6460'; ctx.strokeStyle = '#B5AFA9';
+  yTicks.forEach(function(v) {
+    ctx.beginPath(); ctx.moveTo(M.l - 5, sy(v)); ctx.lineTo(M.l, sy(v)); ctx.stroke();
+    ctx.fillText(v.toFixed(0) + '%', M.l - 9, sy(v) + 4);
+  });
+
+  // X axis bucket labels
+  buckets.forEach(function(bucket, bIdx) {
+    const x = M.l + bIdx * groupW + groupW / 2;
+    ctx.font = '10px DM Mono, monospace'; ctx.fillStyle = '#6B6460'; ctx.textAlign = 'center';
+    ctx.fillText(bucket.label, x, M.t + CH + 18);
+    ctx.font = '9px DM Mono, monospace'; ctx.fillStyle = '#B5AFA9';
+    ctx.fillText('n=' + bucket.rows.length, x, M.t + CH + 31);
+  });
+
+  ctx.font = '11px DM Sans, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#6B6460';
+  ctx.fillText((_modifierType === 'girdle' ? 'Girdle' : 'Bulge') + ' modifier', M.l + CW / 2, H - 4);
+  ctx.save();
+  ctx.translate(14, M.t + CH / 2); ctx.rotate(-Math.PI / 2);
+  ctx.fillText('Absolute error (%)', 0, 0);
+  ctx.restore();
+
+  // Legend
+  const lx = M.l + CW + 16, ly = M.t + 8;
+  series.forEach(function(s, si) {
+    ctx.strokeStyle = s.color; ctx.fillStyle = s.fill; ctx.lineWidth = 1.5;
+    ctx.fillRect(lx, ly + si * 20, 12, 12);
+    ctx.strokeRect(lx, ly + si * 20, 12, 12);
+    ctx.fillStyle = '#6B6460'; ctx.font = '11px DM Sans, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(s.label, lx + 18, ly + si * 20 + 10);
+  });
+}
+
+// ════════════════════════════════════════════════════
 // RENDER — RESULTS TABLE  (paginated, sortable, deletable)
 // ════════════════════════════════════════════════════
 
 let _allResults     = [];
 let _currentResults = [];
 let _currentPage    = 0;
+let _filterType  = null; // 'shape' | 'gemstone' | null
+let _filterValue = null;
 const PAGE_SIZE     = 200;
 let _sortCol = 'index', _sortDir = 1;
 
@@ -916,6 +2097,10 @@ const SORT_COLS = {
   absBaseErr: function(r) { return r.absBaseErr !== null ? r.absBaseErr : Infinity; },
   mc:         function(r) { return r.mc         !== null ? r.mc         : Infinity; },
   absMcErr:   function(r) { return r.absMcErr   !== null ? r.absMcErr   : Infinity; },
+  old:        function(r) { return r.old        !== null ? r.old        : Infinity; },
+  absOldErr:  function(r) { return r.absOldErr  !== null ? r.absOldErr  : Infinity; },
+  dendritics: function(r) { return r.dendritics !== null ? r.dendritics : Infinity; },
+  absDendriticsErr: function(r) { return r.absDendriticsErr !== null ? r.absDendriticsErr : Infinity; },
 };
 
 function sortArrow(col) {
@@ -931,12 +2116,13 @@ function renderTable(results) {
 }
 
 function renderTablePage() {
-  const total = _currentResults.length;
+  const data = getFilteredResults();
+  const total = data.length;
   const titleEl = document.getElementById('tableTitle');
   if (titleEl) titleEl.textContent = 'Full Results — ' + total.toLocaleString() + ' stone' + (total !== 1 ? 's' : '');
 
   const fn = SORT_COLS[_sortCol] || SORT_COLS.index;
-  const sorted = _currentResults.slice().sort(function(a, b) {
+  const sorted = data.slice().sort(function(a, b) {
     const av = fn(a), bv = fn(b);
     return (av > bv ? 1 : av < bv ? -1 : 0) * _sortDir;
   });
@@ -951,11 +2137,15 @@ function renderTablePage() {
     + '<th>Stone</th><th>Shape</th>'
     + '<th class="right">L</th><th class="right">W</th><th class="right">D</th>'
     + '<th class="right" onclick="sortBy(\'actual\')">Actual' + sortArrow('actual') + '</th>'
-    + '<th class="right" onclick="sortBy(\'base\')">Base' + sortArrow('base') + '</th>'
-    + '<th class="right" onclick="sortBy(\'absBaseErr\')">Base Err' + sortArrow('absBaseErr') + '</th>'
+    + (_showBase ? '<th class="right" onclick="sortBy(\'base\')">Base' + sortArrow('base') + '</th>'
+                   + '<th class="right" onclick="sortBy(\'absBaseErr\')">Base Err' + sortArrow('absBaseErr') + '</th>' : '')
     + '<th class="right">Girdle</th><th class="right">Bulge</th>'
-    + '<th class="right" onclick="sortBy(\'mc\')">MC Mean' + sortArrow('mc') + '</th>'
-    + '<th class="right" onclick="sortBy(\'absMcErr\')">MC Err' + sortArrow('absMcErr') + '</th>'
+    + (_showMC ? '<th class="right" onclick="sortBy(\'mc\')">MC Mean' + sortArrow('mc') + '</th>'
+                 + '<th class="right" onclick="sortBy(\'absMcErr\')">MC Err' + sortArrow('absMcErr') + '</th>' : '')
+    + (_showOld ? '<th class="right" onclick="sortBy(\'old\')">Old Calc' + sortArrow('old') + '</th>'
+                  + '<th class="right" onclick="sortBy(\'absOldErr\')">Old Calc Err' + sortArrow('absOldErr') + '</th>' : '')
+    + (_showDendritics ? '<th class="right" onclick="sortBy(\'dendritics\')">Dendritics' + sortArrow('dendritics') + '</th>'
+                         + '<th class="right" onclick="sortBy(\'absDendriticsErr\')">Dend Err' + sortArrow('absDendriticsErr') + '</th>' : '')
     + '<th></th>'
     + '</tr></thead>';
 
@@ -969,17 +2159,26 @@ function renderTablePage() {
       + '<td class="right">' + r.W.toFixed(2) + '</td>'
       + '<td class="right">' + r.D.toFixed(2) + '</td>'
       + '<td class="right"><strong>' + r.actual.toFixed(2) + '</strong></td>'
-      + '<td class="right">' + fmt2(r.base) + '</td>'
-      + '<td class="right">' + errBadge(r.baseErr) + '</td>'
+      + (_showBase ? '<td class="right">' + fmt2(r.base) + '</td>'
+                     + '<td class="right">' + errBadge(r.baseErr) + '</td>' : '')
       + '<td class="right" style="color:var(--mid)">' + (gBold ? '<strong>' : '') + '\xd7' + r.girdle_mod.toFixed(2) + (gBold ? '</strong>' : '') + '</td>'
       + '<td class="right" style="color:var(--mid)">' + (bBold ? '<strong>' : '') + '\xd7' + r.bulge_mod.toFixed(2)  + (bBold ? '</strong>' : '') + '</td>'
-      + '<td class="right">' + fmt2(r.mc) + '</td>'
-      + '<td class="right">' + errBadge(r.mcErr) + '</td>'
+      + (_showMC ? '<td class="right">' + fmt2(r.mc) + '</td>'
+                   + '<td class="right">' + errBadge(r.mcErr) + '</td>' : '')
+      + (_showOld ? '<td class="right">' + fmt2(r.old) + '</td>'
+                    + '<td class="right">' + errBadge(r.oldErr) + '</td>' : '')
+      + (_showDendritics ? '<td class="right">' + fmt2(r.dendritics) + '</td>'
+                           + '<td class="right">' + errBadge(r.dendriticsErr) + '</td>' : '')
       + '<td style="padding:4px 6px"><button class="del-btn" onclick="deleteRow(' + r.index + ')" title="Remove entry">\xd7</button></td>'
       + '</tr>';
   }).join('');
 
-  document.getElementById('resultsTable').innerHTML = thead + '<tbody>' + tbody + '</tbody>';
+  const numSeries = (_showBase?1:0) + (_showMC?1:0) + (_showOld?1:0) + (_showDendritics?1:0);
+  const minWidth = 520 + numSeries * 220;
+
+  const tableEl = document.getElementById('resultsTable');
+  tableEl.style.minWidth = minWidth + 'px';
+  tableEl.innerHTML = thead + '<tbody>' + tbody + '</tbody>';
   renderPagination(total, totalPages);
 }
 
@@ -1053,7 +2252,7 @@ function csvField(v) {
 
 function exportCSV() {
   if (!_currentResults.length) { alert('No results to export.'); return; }
-  const headers = ['Index','Gemstone','Shape','shape_id','L','W','D','girdle_modifier','bulge_modifier','Actual_Weight','Base_Calc','Base_Error_Pct','MC_Mean','MC_Error_Pct'];
+  const headers = ['Index','Gemstone','Shape','shape_id','L','W','D','girdle_modifier','bulge_modifier','Actual_Weight','Base_Calc','Base_Error_Pct','MC_Mean','MC_Error_Pct','Old_Calc','Old_Error_Pct','Dendritics_Calc','Dendritics_Error_Pct'];
   const lines = [headers.join(',')];
   _currentResults.forEach(function(r) {
     lines.push([
@@ -1063,6 +2262,10 @@ function exportCSV() {
       r.baseErr !== null ? r.baseErr.toFixed(2) : '',
       r.mc !== null ? r.mc.toFixed(4) : '',
       r.mcErr !== null ? r.mcErr.toFixed(2) : '',
+      r.old !== null ? r.old.toFixed(4) : '',
+      r.oldErr !== null ? r.oldErr.toFixed(2) : '',
+      r.dendritics !== null ? r.dendritics.toFixed(4) : '',
+      r.dendriticsErr !== null ? r.dendriticsErr.toFixed(2) : '',
     ].join(','));
   });
   const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
@@ -1080,7 +2283,9 @@ function removeOutliers() {
   const before = _currentResults.length;
   _currentResults = _currentResults.filter(function(r) {
     return (r.absBaseErr === null || r.absBaseErr <= OUTLIER_THRESHOLD)
-        && (r.absMcErr   === null || r.absMcErr   <= OUTLIER_THRESHOLD);
+        && (r.absMcErr   === null || r.absMcErr   <= OUTLIER_THRESHOLD)
+        && (r.absOldErr  === null || r.absOldErr  <= OUTLIER_THRESHOLD)
+        && (r.absDendriticsErr === null || r.absDendriticsErr <= OUTLIER_THRESHOLD);
   });
   const removed = before - _currentResults.length;
   if (removed === 0) { alert('No entries found with error over ' + OUTLIER_THRESHOLD + '%.'); return; }
@@ -1101,6 +2306,52 @@ function restoreAll() {
   rerenderAll();
 }
 
+// ════════════════════════════════════════════════════
+// BREAKDOWN ROW FILTER
+// Clicking a row in the Shape/Material breakdown narrows the
+// summary stats, error histogram, charts and full results table
+// to that group. Breakdown tables themselves stay unfiltered so
+// another group can be picked (or the same one clicked to clear).
+// ════════════════════════════════════════════════════
+
+function getFilteredResults() {
+  if (!_filterType) return _currentResults;
+  const filtered = _currentResults.filter(function(r) {
+    return _filterType === 'shape' ? r.shape_id === _filterValue : r.gemstone === _filterValue;
+  });
+  if (!filtered.length) { _filterType = null; _filterValue = null; return _currentResults; }
+  return filtered;
+}
+
+function setFilter(type, value) {
+  if (_filterType === type && _filterValue === value) {
+    _filterType = null; _filterValue = null;
+  } else {
+    _filterType = type; _filterValue = value;
+  }
+  rerenderAll();
+}
+
+function clearFilter() {
+  _filterType = null; _filterValue = null;
+  rerenderAll();
+}
+
+function renderFilterBar() {
+  const bar = document.getElementById('filterBar');
+  if (!bar) return;
+  if (!_filterType) { bar.style.display = 'none'; return; }
+  const n = getFilteredResults().length;
+  const label = _filterType === 'shape' ? 'Shape ID' : 'Gemstone';
+  bar.style.display = '';
+  document.getElementById('filterDesc').textContent =
+    'Filtered to ' + label + ' “' + _filterValue + '” — ' + n.toLocaleString() + ' stone' + (n !== 1 ? 's' : '');
+}
+
+function escAttr(s) {
+  return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
 function rerenderAll() {
   const deleted = _allResults.length - _currentResults.length;
   const bar = document.getElementById('deletedBar');
@@ -1113,10 +2364,10 @@ function rerenderAll() {
       bar.style.display = 'none';
     }
   }
-  renderSummary(_currentResults);
-  renderShapeBreakdown(_currentResults);
-  drawScatterPlot(_currentResults);
+  renderFilterBar();
+  renderSummary(getFilteredResults());
   renderTablePage();
+  renderActiveTabs(_currentResults);
 }
 
 // ════════════════════════════════════════════════════
@@ -1131,6 +2382,7 @@ function spawnWorker() {
   if (_worker) { _worker.terminate(); }
   const src = [
     'const SHAPES_DATA=' + JSON.stringify(SHAPES_DATA) + ';',
+    'const OLD_SHAPES_DATA=' + JSON.stringify(OLD_SHAPES_DATA) + ';',
     'const STONE_SG='    + JSON.stringify(STONE_SG)    + ';',
     'const STONES_DATA=' + JSON.stringify(STONES_DATA) + ';',
     'const MC_N='        + MC_N                        + ';',
@@ -1138,6 +2390,7 @@ function spawnWorker() {
     'const IRWIN_HALL_4_SCALE=' + IRWIN_HALL_4_SCALE   + ';',
     getLWAdj.toString()          + ';',
     calcWeight.toString()        + ';',
+    calcWeightOld.toString()     + ';',
     getMcIterations.toString()   + ';',
     normalSample.toString()      + ';',
     triangularSample.toString()  + ';',
@@ -1179,15 +2432,17 @@ function runTest() {
     if (!results.length) { alert('No valid rows found — check CSV format and column names.'); return; }
 
     _sortCol = 'index'; _sortDir = 1; _currentPage = 0;
+    _filterType = null; _filterValue = null;
     _canvasReady = false; // allow listener to attach to fresh canvas
 
     document.getElementById('deletedBar').style.display = 'none';
+    document.getElementById('filterBar').style.display = 'none';
     document.getElementById('resultsSection').style.display = '';
 
     renderSummary(results);
-    renderShapeBreakdown(results);
-    drawScatterPlot(results);
+    renderSeriesToggles();
     renderTable(results);
+    renderActiveTabs(results);
     ensureCanvasTooltip();
 
     document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1201,10 +2456,12 @@ function runTest() {
       if (!raw.length) { alert('No valid rows found — check CSV format.'); return; }
       const results = processRows(raw);
       _sortCol = 'index'; _sortDir = 1; _currentPage = 0; _canvasReady = false;
+      _filterType = null; _filterValue = null;
       document.getElementById('deletedBar').style.display = 'none';
+      document.getElementById('filterBar').style.display = 'none';
       document.getElementById('resultsSection').style.display = '';
-      renderSummary(results); renderShapeBreakdown(results);
-      drawScatterPlot(results); renderTable(results); ensureCanvasTooltip();
+      renderSummary(results); renderSeriesToggles(); renderTable(results);
+      renderActiveTabs(results); ensureCanvasTooltip();
       document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch(e2) { alert('Error: ' + e2.message); }
   };
@@ -1217,8 +2474,17 @@ function clearAll() {
   document.getElementById('csvInput').value = '';
   document.getElementById('resultsSection').style.display = 'none';
   document.getElementById('deletedBar').style.display = 'none';
+  document.getElementById('filterBar').style.display = 'none';
   _allResults = []; _currentResults = []; _canvasReady = false;
-  _showBase = true; _showMC = true; _legendHitAreas = [];
+  _filterType = null; _filterValue = null;
+  _showBase = true; _showMC = true; _showOld = true; _showDendritics = true; _legendHitAreas = [];
+  _showIndustryCodes = false;
+  const codesToggle = document.getElementById('codesToggle');
+  if (codesToggle) { codesToggle.classList.remove('active'); codesToggle.textContent = 'Show industry codes'; }
+  setStatsTab('summary');
+  setBreakdownTab('shape');
+  setChartsTab('pred');
+  setModifierType('girdle');
   const btn = document.getElementById('runBtn');
   btn.disabled = false; btn.textContent = 'Run Test';
 }
@@ -1237,7 +2503,13 @@ let _resizeTimer;
 window.addEventListener('resize', function() {
   clearTimeout(_resizeTimer);
   _resizeTimer = setTimeout(function() {
-    if (_currentResults.length) drawScatterPlot(_currentResults);
+    const filtered = getFilteredResults();
+    if (!filtered.length) return;
+    if (_chartsTab === 'pred') drawScatterPlot(filtered);
+    else if (_chartsTab === 'residual') drawResidualPlot(filtered);
+    else if (_chartsTab === 'aspect') drawAspectPlot(filtered);
+    else if (_chartsTab === 'modifier') drawModifierBoxplot(filtered);
+    if (_statsTab === 'histogram') drawErrorHistogram(filtered);
   }, 250);
 });
 </script>

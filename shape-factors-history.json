@@ -1,0 +1,35 @@
+{
+  "_note": "Snapshot of shape factors before calibration against GemSelect v3 (20,837 stones) + independent Ruby/Sapphire/Emerald dataset (13,263 stones). Both files (index.html and test-harness.html) used these values prior to the June 2026 calibration pass.",
+  "shapes": [
+    { "id": "round",    "sf_old": 0.00180, "sf_new": 0.00200, "kd_old": 0.00612, "kd_new": 0.00612 },
+    { "id": "oec",      "sf_old": 0.00180, "sf_new": 0.00200, "kd_old": 0.00600, "kd_new": 0.00600 },
+    { "id": "omc",      "sf_old": 0.00180, "sf_new": 0.00200, "kd_old": 0.00615, "kd_new": 0.00615 },
+    { "id": "rose",     "sf_old": 0.00150, "sf_new": 0.00150, "kd_old": 0.00500, "kd_new": 0.00500, "_note": "uncalibrated — insufficient clean data" },
+    { "id": "oval",     "sf_old": 0.00200, "sf_new": 0.00222, "kd_old": 0.00650, "kd_new": 0.00650 },
+    { "id": "pear",     "sf_old": 0.00180, "sf_new": 0.00195, "kd_old": 0.00590, "kd_new": 0.00612 },
+    { "id": "marquise", "sf_old": 0.00160, "sf_new": 0.00160, "kd_old": 0.00565, "kd_new": 0.00583, "_note": "sf reset — conflicting dataset signals; kd updated" },
+    { "id": "navette",  "sf_old": 0.00225, "sf_new": 0.00225, "kd_old": null,    "kd_new": null,    "_note": "uncalibrated — no data" },
+    { "id": "heart",    "sf_old": 0.00175, "sf_new": 0.00194, "kd_old": 0.00590, "kd_new": 0.00598 },
+    { "id": "cushion",  "sf_old": 0.00220, "sf_new": 0.00242, "kd_old": 0.00838, "kd_new": 0.00838 },
+    { "id": "princess", "sf_old": 0.00230, "sf_new": 0.00265, "kd_old": 0.00827, "kd_new": 0.00827, "_note": "sf calibrated excl. Square Step-Cut rows (n=771)" },
+    { "id": "rectcut",  "sf_old": 0.00215, "sf_new": 0.00215, "kd_old": 0.00757, "kd_new": 0.00757, "_note": "uncalibrated — no data" },
+    { "id": "asscher",  "sf_old": 0.00230, "sf_new": 0.00230, "kd_old": 0.00861, "kd_new": 0.00861, "_note": "uncalibrated — n=93 insufficient" },
+    { "id": "emerald",  "sf_old": 0.00250, "sf_new": 0.00268, "kd_old": 0.00890, "kd_new": 0.00890, "_note": "sf calibrated on independent dataset (n=2,362) as primary truth" },
+    { "id": "radiant",  "sf_old": 0.00250, "sf_new": 0.00240, "kd_old": 0.00820, "kd_new": 0.00820 },
+    { "id": "trillion", "sf_old": 0.00170, "sf_new": 0.00185, "kd_old": 0.00510, "kd_new": 0.00510 },
+    { "id": "baguette", "sf_old": 0.00250, "sf_new": 0.00250, "kd_old": 0.00915, "kd_new": 0.00915, "_note": "uncalibrated — no data" },
+    { "id": "cabochon", "sf_old": 0.00270, "sf_new": 0.00270, "kd_old": null,    "kd_new": null,    "_note": "uncalibrated — needs subtype split (opal flat-dome vs standard dome)" }
+  ],
+  "calibration_results": {
+    "gemselect_v3": {
+      "n": 20837,
+      "old_mae": "11.6%", "old_median": "-9.3%", "old_within_5pct": "20%",
+      "new_mae":  "7.9%",  "new_median": "-1.5%", "new_within_5pct": "50%"
+    },
+    "independent_ruby_sapphire_emerald": {
+      "n": 13263,
+      "old_mae": "10.8%", "old_median": "-9.4%", "old_within_5pct": "25%",
+      "new_mae":  "7.5%",  "new_median": "+0.5%", "new_within_5pct": "43%"
+    }
+  }
+}

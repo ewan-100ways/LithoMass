@@ -296,6 +296,20 @@ header {
   .history-panel, .history-toggle-btn { display: none; }
 }
 
+/* ── Embed mode (loaded inside an iframe from the listing tool) ── */
+.embed header,
+.embed .history-panel,
+.embed .history-toggle-btn { display: none !important; }
+.embed body { background: var(--warm-white); }
+.embed .main-layout { padding-top: 12px; }
+.embed-insert-btn {
+  background: var(--gold); color: var(--charcoal); border: none;
+  font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.06em; padding: 7px 14px; border-radius: 4px;
+  cursor: pointer;
+}
+.embed-insert-btn:hover { background: var(--gold-light); }
+
 @media (max-width: 500px) {
   .field input, .field select, .dim-field input {
     padding: 10px 10px;
@@ -505,6 +519,30 @@ header {
 </footer>
 
 <script>
+// ════════════════════════════════════════════════════════════════
+// EMBED MODE
+// Activated by ?embed=1 in the URL. Hides navigation chrome and
+// surfaces an "Insert weight" button that postMessages the result
+// back to the parent frame (the 100 Ways listing tool).
+// The ?stone=X param pre-selects a stone type by name on load.
+// ════════════════════════════════════════════════════════════════
+
+const _params   = new URLSearchParams(location.search);
+const IS_EMBED  = _params.get('embed') === '1';
+const INIT_STONE = (_params.get('stone') || '').trim();
+
+if (IS_EMBED) {
+  document.documentElement.classList.add('embed');
+}
+
+function insertWeight(val) {
+  window.parent.postMessage({
+    type:  '100w:acceptCalcWeight',
+    value: val,
+    stone: S.stoneName || '',
+  }, '*');
+}
+
 // ════════════════════════════════════════════════════════════════
 // PROBABILITY HELPERS (for Statistical / Monte Carlo mode)
 // ════════════════════════════════════════════════════════════════
@@ -838,6 +876,15 @@ function init() {
   restoreCorrButtons();
   renderHistory();
   markStale();
+  if (INIT_STONE) {
+    const match = STONES.find(s => s.name.toLowerCase() === INIT_STONE.toLowerCase());
+    if (match) {
+      S.stoneName = match.name;
+      S.sg = match.sg;
+      document.getElementById('stoneInput').value = match.name;
+      document.getElementById('sgInput').value = match.sg.toFixed(2);
+    }
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1424,6 +1471,7 @@ function renderDeterministicResult(card, sh, dims, sg, isDiamond, effKd, mcFallb
     <div class="result-actions">
       <button class="result-btn" onclick="copyResult('${ctStr}')">Copy weight</button>
       <button class="result-btn" onclick="resetAll()">Reset</button>
+      ${IS_EMBED ? `<button class="embed-insert-btn" onclick="insertWeight('${ctStr}')">Insert weight →</button>` : ''}
     </div>`;
   card.dataset.hasResult = '1';
   _lastResult = { val: ctStr, mc: false };
@@ -1558,6 +1606,7 @@ function renderMCResult(card, sh, dims, sg, isDiamond, effKd, mc) {
     <div class="result-actions">
       <button class="result-btn" onclick="copyResult('${medianStr}')">Copy median</button>
       <button class="result-btn" onclick="resetAll()">Reset</button>
+      ${IS_EMBED ? `<button class="embed-insert-btn" onclick="insertWeight('${medianStr}')">Insert weight →</button>` : ''}
     </div>`;
   card.dataset.hasResult = '1';
   _lastResult = { val: medianStr, mc: true };
